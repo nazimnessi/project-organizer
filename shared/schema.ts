@@ -30,6 +30,7 @@ export const features = pgTable("features", {
   projectId: integer("project_id").notNull(),
   description: text("description").notNull(),
   status: text("status").default("pending"), // pending, completed
+  rank: integer("rank").default(0), // New field for priority
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -39,6 +40,7 @@ export const bugs = pgTable("bugs", {
   projectId: integer("project_id").notNull(),
   description: text("description").notNull(),
   status: text("status").default("open"), // open, fixed
+  rank: integer("rank").default(0), // New field for priority
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -48,6 +50,7 @@ export const improvements = pgTable("improvements", {
   projectId: integer("project_id").notNull(),
   description: text("description").notNull(),
   status: text("status").default("pending"), // pending, completed
+  rank: integer("rank").default(0), // New field for priority
   createdAt: timestamp("created_at").defaultNow(),
 });
 

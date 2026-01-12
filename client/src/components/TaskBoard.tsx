@@ -175,8 +175,12 @@ function ItemList({
     }
   };
 
-  const pendingItems = items.filter(item => item.status === "pending" || item.status === "open");
-  const completedItems = items.filter(item => item.status === "completed" || item.status === "fixed");
+  const pendingItems = items
+    .filter(item => item.status === "pending" || item.status === "open")
+    .sort((a, b) => (b.rank || 0) - (a.rank || 0));
+  const completedItems = items
+    .filter(item => item.status === "completed" || item.status === "fixed")
+    .sort((a, b) => (b.rank || 0) - (a.rank || 0));
 
   return (
     <div className="space-y-4">
@@ -277,6 +281,7 @@ function TaskItem({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.description);
+  const [editRank, setEditRank] = useState(String(item.rank || 0));
 
   const updateFeature = useUpdateFeature();
   const deleteFeature = useDeleteFeature();
@@ -316,13 +321,14 @@ function TaskItem({
   };
 
   const handleUpdateText = () => {
-    if (editValue.trim() !== item.description) {
+    const rankNum = parseInt(editRank) || 0;
+    if (editValue.trim() !== item.description || rankNum !== item.rank) {
       if (type === "feature") {
-        updateFeature.mutate({ id: item.id, projectId, description: editValue });
+        updateFeature.mutate({ id: item.id, projectId, description: editValue, rank: rankNum });
       } else if (type === "bug") {
-        updateBug.mutate({ id: item.id, projectId, description: editValue });
+        updateBug.mutate({ id: item.id, projectId, description: editValue, rank: rankNum });
       } else {
-        updateImprovement.mutate({ id: item.id, projectId, description: editValue });
+        updateImprovement.mutate({ id: item.id, projectId, description: editValue, rank: rankNum });
       }
     }
     setIsEditing(false);
@@ -349,6 +355,15 @@ function TaskItem({
       <div className="flex-1 min-w-0">
         {isEditing ? (
           <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center">
+              <span className="text-xs font-medium text-muted-foreground">Rank:</span>
+              <Input 
+                type="number"
+                value={editRank}
+                onChange={(e) => setEditRank(e.target.value)}
+                className="w-20 h-8 text-xs"
+              />
+            </div>
             <Textarea 
               value={editValue} 
               onChange={(e) => setEditValue(e.target.value)}
@@ -362,8 +377,15 @@ function TaskItem({
           </div>
         ) : (
           <div className="flex justify-between items-start gap-4">
-            <div className={`text-sm whitespace-pre-wrap ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}>
-              {item.description}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono">
+                  Rank: {item.rank || 0}
+                </Badge>
+              </div>
+              <div className={`text-sm whitespace-pre-wrap ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                {item.description}
+              </div>
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
               <button onClick={() => setIsEditing(true)} className="p-1 text-muted-foreground hover:text-primary">

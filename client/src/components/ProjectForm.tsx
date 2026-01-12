@@ -60,9 +60,37 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
             name="description"
             render={({ field }) => (
               <FormItem className="col-span-1 md:col-span-2">
-                <FormLabel>Description</FormLabel>
+                <FormLabel>Description (Markdown)</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="What does this project do?" className="h-20" {...field} value={field.value || ""} />
+                  <Textarea placeholder="What does this project do?" className="h-24" {...field} value={field.value || ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="frontendDetails"
+            render={({ field }) => (
+              <FormItem className="col-span-1 md:col-span-2">
+                <FormLabel>Frontend Details (Markdown)</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Architecture, components, styling..." className="h-24" {...field} value={field.value || ""} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="backendDetails"
+            render={({ field }) => (
+              <FormItem className="col-span-1 md:col-span-2">
+                <FormLabel>Backend Details (Markdown)</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="API, storage, database, security..." className="h-24" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

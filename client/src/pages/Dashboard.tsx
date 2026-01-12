@@ -37,6 +37,7 @@ import {
 import { ProjectForm } from "@/components/ProjectForm";
 import { TaskBoard } from "@/components/TaskBoard";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -275,9 +276,11 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
         </button>
         
         <div className="flex justify-between items-start">
-          <div>
+          <div className="flex-1 min-w-0">
             <h1 className="text-4xl font-display font-bold">{project.name}</h1>
-            <p className="text-muted-foreground mt-2 max-w-2xl">{project.description}</p>
+            <div className="mt-4 prose prose-invert max-w-none text-muted-foreground">
+              <ReactMarkdown>{project.description || ""}</ReactMarkdown>
+            </div>
           </div>
           
           <div className="flex gap-2">
@@ -342,8 +345,33 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content: Tasks */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Main Content: Tasks & Markdown Details */}
+        <div className="lg:col-span-2 space-y-8">
+          {(project.frontendDetails || project.backendDetails) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {project.frontendDetails && (
+                <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+                  <h3 className="text-lg font-display font-semibold mb-4 flex items-center gap-2">
+                    <LayoutGrid className="w-4 h-4 text-purple-400" /> Frontend Details
+                  </h3>
+                  <div className="prose prose-sm prose-invert max-w-none text-muted-foreground">
+                    <ReactMarkdown>{project.frontendDetails}</ReactMarkdown>
+                  </div>
+                </div>
+              )}
+              {project.backendDetails && (
+                <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+                  <h3 className="text-lg font-display font-semibold mb-4 flex items-center gap-2">
+                    <Server className="w-4 h-4 text-blue-400" /> Backend Details
+                  </h3>
+                  <div className="prose prose-sm prose-invert max-w-none text-muted-foreground">
+                    <ReactMarkdown>{project.backendDetails}</ReactMarkdown>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="bg-card/50 border border-border/50 rounded-xl p-6">
             <TaskBoard 
               projectId={project.id} 

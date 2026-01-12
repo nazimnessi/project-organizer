@@ -11,11 +11,13 @@ export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull(), // Links to users.id from auth
   name: text("name").notNull(),
-  description: text("description"),
+  description: text("description"), // Markdown supported
   productionLink: text("production_link"),
   repoLink: text("repo_link"),
   frontendLink: text("frontend_link"),
   backendLink: text("backend_link"),
+  frontendDetails: text("frontend_details"), // New field: Markdown supported
+  backendDetails: text("backend_details"),   // New field: Markdown supported
   envDetails: text("env_details"),
   testUserDetails: text("test_user_details"),
   authDetails: text("auth_details"),

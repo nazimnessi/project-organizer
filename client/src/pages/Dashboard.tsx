@@ -211,15 +211,15 @@ export default function Dashboard() {
 }
 
 function ProjectCard({ project, onClick }: { project: any, onClick: () => void }) {
-  const pendingFeatures = project.features?.filter((i: any) => i.status === "pending" || i.status === "open").length || 0;
-  const pendingImprovements = project.improvements?.filter((i: any) => i.status === "pending" || i.status === "open").length || 0;
-  const pendingBugs = project.bugs?.filter((i: any) => i.status === "pending" || i.status === "open").length || 0;
+  const pendingFeaturesList = project.features?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
+  const pendingImprovementsList = project.improvements?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
+  const pendingBugsList = project.bugs?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
 
   return (
     <motion.div 
       whileHover={{ y: -4, shadow: "0 10px 30px -10px rgba(0,0,0,0.3)" }}
       onClick={onClick}
-      className="bg-card border border-border/50 rounded-xl p-6 cursor-pointer hover:border-primary/50 transition-colors shadow-lg shadow-black/5 flex flex-col h-full"
+      className="bg-card border border-border/50 rounded-xl p-6 cursor-pointer hover:border-primary/50 transition-colors shadow-lg shadow-black/5 flex flex-col h-full relative group/card"
     >
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-xl font-display font-semibold line-clamp-1">{project.name}</h3>
@@ -230,18 +230,59 @@ function ProjectCard({ project, onClick }: { project: any, onClick: () => void }
       </p>
       
       <div className="flex flex-wrap gap-2 border-t border-border/50 pt-4 mt-auto">
-        <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-blue-500/5 text-blue-400 border-blue-500/20">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-          {pendingFeatures} Features
-        </Badge>
-        <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-purple-500/5 text-purple-400 border-purple-500/20">
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-          {pendingImprovements} Improvements
-        </Badge>
-        <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-red-500/5 text-red-400 border-red-500/20">
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-          {pendingBugs} Bugs
-        </Badge>
+        <div className="relative group/badge">
+          <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-blue-500/5 text-blue-400 border-blue-500/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            {pendingFeaturesList.length} Features
+          </Badge>
+          {pendingFeaturesList.length > 0 && (
+            <div className="absolute bottom-full left-0 mb-2 w-64 bg-popover border border-border p-3 rounded-lg shadow-xl opacity-0 translate-y-1 pointer-events-none group-hover/badge:opacity-100 group-hover/badge:translate-y-0 transition-all z-50">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Pending Features</h4>
+              <ul className="space-y-1.5">
+                {pendingFeaturesList.slice(0, 5).map((item: any) => (
+                  <li key={item.id} className="text-[11px] text-foreground border-l-2 border-blue-500 pl-2 line-clamp-2">{item.description}</li>
+                ))}
+                {pendingFeaturesList.length > 5 && <li className="text-[10px] text-muted-foreground italic">+{pendingFeaturesList.length - 5} more...</li>}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className="relative group/badge">
+          <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-purple-500/5 text-purple-400 border-purple-500/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+            {pendingImprovementsList.length} Improvements
+          </Badge>
+          {pendingImprovementsList.length > 0 && (
+            <div className="absolute bottom-full left-0 mb-2 w-64 bg-popover border border-border p-3 rounded-lg shadow-xl opacity-0 translate-y-1 pointer-events-none group-hover/badge:opacity-100 group-hover/badge:translate-y-0 transition-all z-50">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Pending Improvements</h4>
+              <ul className="space-y-1.5">
+                {pendingImprovementsList.slice(0, 5).map((item: any) => (
+                  <li key={item.id} className="text-[11px] text-foreground border-l-2 border-purple-500 pl-2 line-clamp-2">{item.description}</li>
+                ))}
+                {pendingImprovementsList.length > 5 && <li className="text-[10px] text-muted-foreground italic">+{pendingImprovementsList.length - 5} more...</li>}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className="relative group/badge">
+          <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-red-500/5 text-red-400 border-red-500/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            {pendingBugsList.length} Bugs
+          </Badge>
+          {pendingBugsList.length > 0 && (
+            <div className="absolute bottom-full left-0 mb-2 w-64 bg-popover border border-border p-3 rounded-lg shadow-xl opacity-0 translate-y-1 pointer-events-none group-hover/badge:opacity-100 group-hover/badge:translate-y-0 transition-all z-50">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Active Bugs</h4>
+              <ul className="space-y-1.5">
+                {pendingBugsList.slice(0, 5).map((item: any) => (
+                  <li key={item.id} className="text-[11px] text-foreground border-l-2 border-red-500 pl-2 line-clamp-2">{item.description}</li>
+                ))}
+                {pendingBugsList.length > 5 && <li className="text-[10px] text-muted-foreground italic">+{pendingBugsList.length - 5} more...</li>}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );

@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { ProjectForm } from "@/components/ProjectForm";
 import { TaskBoard } from "@/components/TaskBoard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -210,6 +211,10 @@ export default function Dashboard() {
 }
 
 function ProjectCard({ project, onClick }: { project: any, onClick: () => void }) {
+  const pendingFeatures = project.features?.filter((i: any) => i.status === "pending" || i.status === "open").length || 0;
+  const pendingImprovements = project.improvements?.filter((i: any) => i.status === "pending" || i.status === "open").length || 0;
+  const pendingBugs = project.bugs?.filter((i: any) => i.status === "pending" || i.status === "open").length || 0;
+
   return (
     <motion.div 
       whileHover={{ y: -4, shadow: "0 10px 30px -10px rgba(0,0,0,0.3)" }}
@@ -224,15 +229,19 @@ function ProjectCard({ project, onClick }: { project: any, onClick: () => void }
         {project.description || "No description provided."}
       </p>
       
-      <div className="flex gap-4 border-t border-border/50 pt-4 mt-auto">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <div className="w-2 h-2 rounded-full bg-blue-500" />
-          {project.features.length} Features
-        </div>
-        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <div className="w-2 h-2 rounded-full bg-red-500" />
-          {project.bugs.length} Bugs
-        </div>
+      <div className="flex flex-wrap gap-2 border-t border-border/50 pt-4 mt-auto">
+        <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-blue-500/5 text-blue-400 border-blue-500/20">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          {pendingFeatures} Features
+        </Badge>
+        <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-purple-500/5 text-purple-400 border-purple-500/20">
+          <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+          {pendingImprovements} Improvements
+        </Badge>
+        <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-red-500/5 text-red-400 border-red-500/20">
+          <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+          {pendingBugs} Bugs
+        </Badge>
       </div>
     </motion.div>
   );

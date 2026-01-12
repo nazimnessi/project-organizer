@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Check, X, Pencil, Trash2, CheckCircle2, Circle } from "lucide-react";
+import { Plus, Check, X, Pencil, Trash2, CheckCircle2, Circle, ChevronDown, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   useCreateFeature, useUpdateFeature, useDeleteFeature,
@@ -8,7 +8,13 @@ import {
 } from "@/hooks/use-projects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -141,6 +147,7 @@ function ItemList({
 }) {
   const [newItem, setNewItem] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [isCompletedOpen, setIsCompletedOpen] = useState(false);
   
   const createFeature = useCreateFeature();
   const createBug = useCreateBug();
@@ -164,6 +171,9 @@ function ItemList({
     }
   };
 
+  const pendingItems = items.filter(item => item.status === "pending" || item.status === "open");
+  const completedItems = items.filter(item => item.status === "completed" || item.status === "fixed");
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
@@ -181,32 +191,34 @@ function ItemList({
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex gap-2 mb-4 p-4 bg-card/50 rounded-lg border border-border"
+          className="flex flex-col gap-2 mb-4 p-4 bg-card/50 rounded-lg border border-border"
         >
-          <Input 
+          <Textarea 
             autoFocus
-            placeholder={`Describe the ${type}...`}
+            placeholder={`Describe the ${type} (Markdown/bullets supported)...`}
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+            className="min-h-[100px]"
           />
-          <Button onClick={handleCreate}>Save</Button>
-          <Button variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleCreate}>Save {type}</Button>
+          </div>
         </motion.div>
       )}
 
       <div className="space-y-2">
         <AnimatePresence mode="popLayout">
-          {items.length === 0 && !isAdding ? (
+          {pendingItems.length === 0 && !isAdding ? (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }}
               className="text-center py-12 text-muted-foreground bg-muted/5 rounded-xl border border-dashed border-border"
             >
-              No {type}s found. Add one to get started!
+              No active {type}s. Add one to get started!
             </motion.div>
           ) : (
-            items.map((item) => (
+            pendingItems.map((item) => (
               <TaskItem 
                 key={item.id} 
                 item={item} 
@@ -216,6 +228,35 @@ function ItemList({
             ))
           )}
         </AnimatePresence>
+
+        {completedItems.length > 0 && (
+          <Collapsible
+            open={isCompletedOpen}
+            onOpenChange={setIsCompletedOpen}
+            className="pt-4"
+          >
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-between px-2 text-muted-foreground hover:text-foreground">
+                <span className="flex items-center gap-2">
+                  {isCompletedOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  Completed {type}s ({completedItems.length})
+                </span>
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-2 mt-2">
+              <AnimatePresence mode="popLayout">
+                {completedItems.map((item) => (
+                  <TaskItem 
+                    key={item.id} 
+                    item={item} 
+                    type={type} 
+                    projectId={projectId} 
+                  />
+                ))}
+              </AnimatePresence>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
       </div>
     </div>
   );
@@ -291,7 +332,7 @@ function TaskItem({
       exit={{ opacity: 0, scale: 0.95 }}
       className={`
         group flex items-start gap-3 p-4 rounded-lg border transition-all duration-200
-        ${isCompleted ? "bg-muted/10 border-transparent opacity-60" : "bg-card border-border/50 hover:border-border hover:shadow-md"}
+        ${isCompleted ? "bg-muted/5 border-transparent opacity-80" : "bg-card border-border/50 hover:border-border hover:shadow-md"}
       `}
     >
       <button 
@@ -303,23 +344,24 @@ function TaskItem({
 
       <div className="flex-1 min-w-0">
         {isEditing ? (
-          <div className="flex gap-2">
-            <Input 
+          <div className="flex flex-col gap-2">
+            <Textarea 
               value={editValue} 
               onChange={(e) => setEditValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleUpdateText()}
               autoFocus
-              className="h-8 text-sm"
+              className="min-h-[80px] text-sm"
             />
-            <Button size="sm" onClick={handleUpdateText} className="h-8">Save</Button>
-            <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
+            <div className="flex justify-end gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
+              <Button size="sm" onClick={handleUpdateText} className="h-8">Save</Button>
+            </div>
           </div>
         ) : (
           <div className="flex justify-between items-start gap-4">
-            <p className={`text-sm ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}>
+            <div className={`text-sm whitespace-pre-wrap ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}>
               {item.description}
-            </p>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            </div>
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
               <button onClick={() => setIsEditing(true)} className="p-1 text-muted-foreground hover:text-primary">
                 <Pencil className="w-4 h-4" />
               </button>

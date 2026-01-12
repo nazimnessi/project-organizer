@@ -32,7 +32,11 @@ interface TaskBoardProps {
 }
 
 export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoardProps) {
-  const [activeTab, setActiveTab] = useState<"features" | "bugs" | "improvements">("features");
+  const [activeTab, setActiveTab] = useState<"features" | "improvements" | "bugs">("features");
+
+  const pendingFeatures = features.filter(i => i.status === "pending" || i.status === "open").length;
+  const pendingImprovements = improvements.filter(i => i.status === "pending" || i.status === "open").length;
+  const pendingBugs = bugs.filter(i => i.status === "pending" || i.status === "open").length;
 
   return (
     <div className="space-y-6">
@@ -40,25 +44,25 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
         <TabButton 
           active={activeTab === "features"} 
           onClick={() => setActiveTab("features")}
-          count={features.length}
+          count={pendingFeatures}
         >
           Features
         </TabButton>
         <TabButton 
-          active={activeTab === "bugs"} 
-          onClick={() => setActiveTab("bugs")}
-          count={bugs.length}
-          variant="danger"
-        >
-          Bugs
-        </TabButton>
-        <TabButton 
           active={activeTab === "improvements"} 
           onClick={() => setActiveTab("improvements")}
-          count={improvements.length}
+          count={pendingImprovements}
           variant="info"
         >
           Improvements
+        </TabButton>
+        <TabButton 
+          active={activeTab === "bugs"} 
+          onClick={() => setActiveTab("bugs")}
+          count={pendingBugs}
+          variant="danger"
+        >
+          Bugs
         </TabButton>
       </div>
 
@@ -70,18 +74,18 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
             type="feature"
           />
         )}
-        {activeTab === "bugs" && (
-          <ItemList 
-            projectId={projectId} 
-            items={bugs} 
-            type="bug"
-          />
-        )}
         {activeTab === "improvements" && (
           <ItemList 
             projectId={projectId} 
             items={improvements} 
             type="improvement"
+          />
+        )}
+        {activeTab === "bugs" && (
+          <ItemList 
+            projectId={projectId} 
+            items={bugs} 
+            type="bug"
           />
         )}
       </div>

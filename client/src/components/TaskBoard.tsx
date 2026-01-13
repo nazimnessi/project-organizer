@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Plus, Check, X, Pencil, Trash2, CheckCircle2, Circle, ChevronDown, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { TagSelect } from "@/components/TagSelect";
 import {
   Collapsible,
   CollapsibleContent,
@@ -37,6 +38,14 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
   const pendingFeatures = features.filter(i => i.status === "pending" || i.status === "open").length;
   const pendingImprovements = improvements.filter(i => i.status === "pending" || i.status === "open").length;
   const pendingBugs = bugs.filter(i => i.status === "pending" || i.status === "open").length;
+
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    [...features, ...bugs, ...improvements].forEach(item => {
+      item.tags?.forEach(tag => tags.add(tag));
+    });
+    return Array.from(tags).sort();
+  }, [features, bugs, improvements]);
 
   return (
     <div className="space-y-6">
@@ -72,6 +81,7 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
             projectId={projectId} 
             items={features} 
             type="feature"
+            availableTags={allTags}
           />
         )}
         {activeTab === "improvements" && (
@@ -79,6 +89,7 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
             projectId={projectId} 
             items={improvements} 
             type="improvement"
+            availableTags={allTags}
           />
         )}
         {activeTab === "bugs" && (
@@ -86,6 +97,7 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
             projectId={projectId} 
             items={bugs} 
             type="bug"
+            availableTags={allTags}
           />
         )}
       </div>
@@ -143,14 +155,16 @@ function TabButton({
 function ItemList({ 
   projectId, 
   items, 
-  type 
+  type,
+  availableTags
 }: { 
   projectId: number; 
   items: (Feature | Bug | Improvement)[]; 
   type: "feature" | "bug" | "improvement"; 
+  availableTags: string[];
 }) {
   const [newItem, setNewItem] = useState("");
-  const [newTags, setNewTags] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isCompletedOpen, setIsCompletedOpen] = useState(false);
   
@@ -161,18 +175,16 @@ function ItemList({
   const handleCreate = async () => {
     if (!newItem.trim()) return;
     
-    const tagsArray = newTags.split(",").map(t => t.trim()).filter(t => t !== "");
-    
     try {
       if (type === "feature") {
-        await createFeature.mutateAsync({ projectId, description: newItem, status: "pending", tags: tagsArray });
+        await createFeature.mutateAsync({ projectId, description: newItem, status: "pending", tags: selectedTags });
       } else if (type === "bug") {
-        await createBug.mutateAsync({ projectId, description: newItem, status: "open", tags: tagsArray });
+        await createBug.mutateAsync({ projectId, description: newItem, status: "open", tags: selectedTags });
       } else {
-        await createImprovement.mutateAsync({ projectId, description: newItem, status: "pending", tags: tagsArray });
+        await createImprovement.mutateAsync({ projectId, description: newItem, status: "pending", tags: selectedTags });
       }
       setNewItem("");
-      setNewTags("");
+      setSelectedTags([]);
       setIsAdding(false);
     } catch (e) {
       // Error handled by hook
@@ -203,7 +215,7 @@ function ItemList({
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-2 mb-4 p-4 bg-card/50 rounded-lg border border-border"
+          className="flex flex-col gap-4 mb-4 p-4 bg-card/50 rounded-lg border border-border"
         >
           <Textarea 
             autoFocus
@@ -213,15 +225,15 @@ function ItemList({
             className="min-h-[100px]"
           />
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags (comma separated)</span>
-            <Input 
-              placeholder="e.g. UI, API, high-priority"
-              value={newTags}
-              onChange={(e) => setNewTags(e.target.value)}
-              className="h-8 text-xs bg-background/50"
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags</span>
+            <TagSelect 
+              selected={selectedTags}
+              onChange={setSelectedTags}
+              availableTags={availableTags}
+              placeholder="Add tags..."
             />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
             <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
             <Button size="sm" onClick={handleCreate}>Save {type}</Button>
           </div>
@@ -245,6 +257,7 @@ function ItemList({
                 item={item} 
                 type={type} 
                 projectId={projectId} 
+                availableTags={availableTags}
               />
             ))
           )}
@@ -272,6 +285,7 @@ function ItemList({
                     item={item} 
                     type={type} 
                     projectId={projectId} 
+                    availableTags={availableTags}
                   />
                 ))}
               </AnimatePresence>
@@ -286,16 +300,18 @@ function ItemList({
 function TaskItem({ 
   item, 
   type, 
-  projectId 
+  projectId,
+  availableTags
 }: { 
   item: Feature | Bug | Improvement; 
   type: "feature" | "bug" | "improvement"; 
   projectId: number; 
+  availableTags: string[];
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.description);
   const [editRank, setEditRank] = useState(String(item.rank || 0));
-  const [editTags, setEditTags] = useState(item.tags?.join(", ") || "");
+  const [editTags, setEditTags] = useState<string[]>(item.tags || []);
 
   const updateFeature = useUpdateFeature();
   const deleteFeature = useDeleteFeature();
@@ -336,15 +352,14 @@ function TaskItem({
 
   const handleUpdateText = () => {
     const rankNum = parseInt(editRank) || 0;
-    const tagsArray = editTags.split(",").map(t => t.trim()).filter(t => t !== "");
     
-    if (editValue.trim() !== item.description || rankNum !== item.rank || JSON.stringify(tagsArray) !== JSON.stringify(item.tags || [])) {
+    if (editValue.trim() !== item.description || rankNum !== item.rank || JSON.stringify(editTags) !== JSON.stringify(item.tags || [])) {
       if (type === "feature") {
-        updateFeature.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
+        updateFeature.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
       } else if (type === "bug") {
-        updateBug.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
+        updateBug.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
       } else {
-        updateImprovement.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
+        updateImprovement.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
       }
     }
     setIsEditing(false);
@@ -370,7 +385,7 @@ function TaskItem({
 
       <div className="flex-1 min-w-0">
         {isEditing ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             <div className="flex gap-2 items-center">
               <span className="text-xs font-medium text-muted-foreground">Rank:</span>
               <Input 
@@ -388,14 +403,14 @@ function TaskItem({
             />
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags</span>
-              <Input 
-                placeholder="e.g. UI, API, high-priority"
-                value={editTags}
-                onChange={(e) => setEditTags(e.target.value)}
-                className="h-8 text-xs bg-background/50"
+              <TagSelect 
+                selected={editTags}
+                onChange={setEditTags}
+                availableTags={availableTags}
+                placeholder="Add tags..."
               />
             </div>
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="flex justify-end gap-2 pt-1 border-t border-border/50">
               <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
               <Button size="sm" onClick={handleUpdateText} className="h-8">Save</Button>
             </div>

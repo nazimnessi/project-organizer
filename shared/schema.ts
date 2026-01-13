@@ -27,7 +27,7 @@ export const projects = pgTable("projects", {
 // Features Table
 export const features = pgTable("features", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").notNull(),
+  projectId: integer("project_id").notNull().references(() => projects.id),
   description: text("description").notNull(),
   status: text("status").default("pending"), // pending, completed
   rank: integer("rank").default(0), // New field for priority
@@ -37,7 +37,7 @@ export const features = pgTable("features", {
 // Bugs Table
 export const bugs = pgTable("bugs", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").notNull(),
+  projectId: integer("project_id").notNull().references(() => projects.id),
   description: text("description").notNull(),
   status: text("status").default("open"), // open, fixed
   rank: integer("rank").default(0), // New field for priority
@@ -47,7 +47,7 @@ export const bugs = pgTable("bugs", {
 // Improvements Table
 export const improvements = pgTable("improvements", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").notNull(),
+  projectId: integer("project_id").notNull().references(() => projects.id),
   description: text("description").notNull(),
   status: text("status").default("pending"), // pending, completed
   rank: integer("rank").default(0), // New field for priority
@@ -57,7 +57,7 @@ export const improvements = pgTable("improvements", {
 // Activity Table
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").notNull(),
+  projectId: integer("project_id").notNull().references(() => projects.id),
   type: text("type").notNull(), // create, update, delete, status_change
   entity: text("entity").notNull(), // project, feature, bug, improvement
   entityId: integer("entity_id"),

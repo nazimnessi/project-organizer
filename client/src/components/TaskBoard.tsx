@@ -151,12 +151,16 @@ function ItemList({
 }) {
   const [newItem, setNewItem] = useState("");
   const [newTags, setNewTags] = useState("");
+  const [tagSearch, setTagSearch] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isCompletedOpen, setIsCompletedOpen] = useState(false);
   
   const createFeature = useCreateFeature();
   const createBug = useCreateBug();
   const createImprovement = useCreateImprovement();
+
+  // Extract all unique tags from items
+  const allTags = Array.from(new Set(items.flatMap(item => item.tags || []))).sort();
 
   const handleCreate = async () => {
     if (!newItem.trim()) return;
@@ -179,25 +183,54 @@ function ItemList({
     }
   };
 
-  const pendingItems = items
+  const filteredItems = items.filter(item => {
+    if (!tagSearch.trim()) return true;
+    const search = tagSearch.toLowerCase();
+    return item.tags?.some(tag => tag.toLowerCase().includes(search));
+  });
+
+  const pendingItems = filteredItems
     .filter(item => item.status === "pending" || item.status === "open")
     .sort((a, b) => (b.rank || 0) - (a.rank || 0));
-  const completedItems = items
+  const completedItems = filteredItems
     .filter(item => item.status === "completed" || item.status === "fixed")
     .sort((a, b) => (b.rank || 0) - (a.rank || 0));
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between mb-4">
         <h3 className="text-lg font-display font-semibold capitalize">{type}s Backlog</h3>
-        <Button 
-          size="sm" 
-          onClick={() => setIsAdding(true)}
-          className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-none shadow-none"
-        >
-          <Plus className="w-4 h-4 mr-1" /> Add {type}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Input 
+            placeholder="Filter by tag..."
+            value={tagSearch}
+            onChange={(e) => setTagSearch(e.target.value)}
+            className="h-8 text-xs w-40"
+          />
+          <Button 
+            size="sm" 
+            onClick={() => setIsAdding(true)}
+            className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-none shadow-none"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Add {type}
+          </Button>
+        </div>
       </div>
+
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {allTags.map(tag => (
+            <Badge 
+              key={tag}
+              variant={tagSearch === tag ? "default" : "secondary"}
+              className="cursor-pointer text-[10px] py-0 h-5"
+              onClick={() => setTagSearch(tagSearch === tag ? "" : tag)}
+            >
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      )}
 
       {isAdding && (
         <motion.div 
@@ -220,6 +253,24 @@ function ItemList({
               onChange={(e) => setNewTags(e.target.value)}
               className="h-8 text-xs bg-background/50"
             />
+            {allTags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {allTags.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      const tags = newTags.split(",").map(t => t.trim()).filter(t => t !== "");
+                      if (!tags.includes(tag)) {
+                        setNewTags(newTags ? `${newTags}, ${tag}` : tag);
+                      }
+                    }}
+                    className="text-[10px] px-1.5 py-0.5 rounded bg-muted hover:bg-muted-foreground/10 text-muted-foreground transition-colors"
+                  >
+                    + {tag}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>

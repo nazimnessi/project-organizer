@@ -37,16 +37,22 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getProjects(userId: string) {
     try {
-      const rows = await db.query.projects.findMany({
-        where: eq(projects.userId, userId),
-        with: {
-          features: true,
-          bugs: true,
-          improvements: true,
-        },
-        orderBy: (projects, { desc }) => [desc(projects.createdAt)],
-      });
-      return rows;
+      const rows = await db.select().from(projects).where(eq(projects.userId, userId));
+      
+      const projectsWithDetails = await Promise.all(rows.map(async (project) => {
+        const projectFeatures = await db.select().from(features).where(eq(features.projectId, project.id));
+        const projectBugs = await db.select().from(bugs).where(eq(bugs.projectId, project.id));
+        const projectImprovements = await db.select().from(improvements).where(eq(improvements.projectId, project.id));
+        
+        return {
+          ...project,
+          features: projectFeatures,
+          bugs: projectBugs,
+          improvements: projectImprovements,
+        };
+      }));
+
+      return projectsWithDetails;
     } catch (error) {
       console.error("Error in getProjects:", error);
       return [];
@@ -54,15 +60,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProject(id: number, userId: string) {
-    const row = await db.query.projects.findFirst({
-      where: (projects, { and, eq }) => and(eq(projects.id, id), eq(projects.userId, userId)),
-      with: {
-        features: true,
-        bugs: true,
-        improvements: true,
-      },
-    });
-    return row;
+    try {
+      const [project] = await db.select().from(projects).where(eq(projects.id, id));
+      if (!project) return undefined;
+
+      const projectFeatures = await db.select().from(features).where(eq(features.projectId, project.id));
+      const projectBugs = await db.select().from(bugs).where(eq(bugs.projectId, project.id));
+      const projectImprovements = await db.select().from(improvements).where(eq(improvements.projectId, project.id));
+
+      return {
+        ...project,
+        features: projectFeatures,
+        bugs: projectBugs,
+        improvements: projectImprovements,
+      };
+    } catch (error) {
+      console.error("Error in getProject:", error);
+      return undefined;
+    }
   }
 
   async createProject(userId: string, insertProject: InsertProject) {

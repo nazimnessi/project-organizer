@@ -150,6 +150,7 @@ function ItemList({
   type: "feature" | "bug" | "improvement"; 
 }) {
   const [newItem, setNewItem] = useState("");
+  const [newTags, setNewTags] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isCompletedOpen, setIsCompletedOpen] = useState(false);
   
@@ -160,15 +161,18 @@ function ItemList({
   const handleCreate = async () => {
     if (!newItem.trim()) return;
     
+    const tagsArray = newTags.split(",").map(t => t.trim()).filter(t => t !== "");
+    
     try {
       if (type === "feature") {
-        await createFeature.mutateAsync({ projectId, description: newItem, status: "pending" });
+        await createFeature.mutateAsync({ projectId, description: newItem, status: "pending", tags: tagsArray });
       } else if (type === "bug") {
-        await createBug.mutateAsync({ projectId, description: newItem, status: "open" });
+        await createBug.mutateAsync({ projectId, description: newItem, status: "open", tags: tagsArray });
       } else {
-        await createImprovement.mutateAsync({ projectId, description: newItem, status: "pending" });
+        await createImprovement.mutateAsync({ projectId, description: newItem, status: "pending", tags: tagsArray });
       }
       setNewItem("");
+      setNewTags("");
       setIsAdding(false);
     } catch (e) {
       // Error handled by hook
@@ -208,7 +212,16 @@ function ItemList({
             onChange={(e) => setNewItem(e.target.value)}
             className="min-h-[100px]"
           />
-          <div className="flex justify-end gap-2">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags (comma separated)</span>
+            <Input 
+              placeholder="e.g. UI, API, high-priority"
+              value={newTags}
+              onChange={(e) => setNewTags(e.target.value)}
+              className="h-8 text-xs bg-background/50"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
             <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
             <Button size="sm" onClick={handleCreate}>Save {type}</Button>
           </div>
@@ -282,6 +295,7 @@ function TaskItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.description);
   const [editRank, setEditRank] = useState(String(item.rank || 0));
+  const [editTags, setEditTags] = useState(item.tags?.join(", ") || "");
 
   const updateFeature = useUpdateFeature();
   const deleteFeature = useDeleteFeature();
@@ -322,13 +336,15 @@ function TaskItem({
 
   const handleUpdateText = () => {
     const rankNum = parseInt(editRank) || 0;
-    if (editValue.trim() !== item.description || rankNum !== item.rank) {
+    const tagsArray = editTags.split(",").map(t => t.trim()).filter(t => t !== "");
+    
+    if (editValue.trim() !== item.description || rankNum !== item.rank || JSON.stringify(tagsArray) !== JSON.stringify(item.tags || [])) {
       if (type === "feature") {
-        updateFeature.mutate({ id: item.id, projectId, description: editValue, rank: rankNum });
+        updateFeature.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
       } else if (type === "bug") {
-        updateBug.mutate({ id: item.id, projectId, description: editValue, rank: rankNum });
+        updateBug.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
       } else {
-        updateImprovement.mutate({ id: item.id, projectId, description: editValue, rank: rankNum });
+        updateImprovement.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
       }
     }
     setIsEditing(false);
@@ -370,7 +386,16 @@ function TaskItem({
               autoFocus
               className="min-h-[80px] text-sm"
             />
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags</span>
+              <Input 
+                placeholder="e.g. UI, API, high-priority"
+                value={editTags}
+                onChange={(e) => setEditTags(e.target.value)}
+                className="h-8 text-xs bg-background/50"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
               <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
               <Button size="sm" onClick={handleUpdateText} className="h-8">Save</Button>
             </div>
@@ -378,10 +403,15 @@ function TaskItem({
         ) : (
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
                 <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono">
                   Rank: {item.rank || 0}
                 </Badge>
+                {item.tags?.map((tag, idx) => (
+                  <Badge key={idx} variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/5 text-primary/70 border-primary/20">
+                    {tag}
+                  </Badge>
+                ))}
               </div>
               <div className={`text-sm whitespace-pre-wrap ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}>
                 {item.description}

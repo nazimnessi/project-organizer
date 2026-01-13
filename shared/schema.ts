@@ -31,6 +31,7 @@ export const features = pgTable("features", {
   description: text("description").notNull(),
   status: text("status").default("pending"), // pending, completed
   rank: integer("rank").default(0), // New field for priority
+  tags: text("tags").array(), // New field for categorization
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -41,6 +42,7 @@ export const bugs = pgTable("bugs", {
   description: text("description").notNull(),
   status: text("status").default("open"), // open, fixed
   rank: integer("rank").default(0), // New field for priority
+  tags: text("tags").array(), // New field for categorization
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -51,6 +53,7 @@ export const improvements = pgTable("improvements", {
   description: text("description").notNull(),
   status: text("status").default("pending"), // pending, completed
   rank: integer("rank").default(0), // New field for priority
+  tags: text("tags").array(), // New field for categorization
   createdAt: timestamp("created_at").defaultNow(),
 });
 

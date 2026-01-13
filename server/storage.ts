@@ -37,7 +37,11 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getProjects(userId: string) {
     try {
-      const rows = await db.select().from(projects).where(eq(projects.userId, userId));
+      const rows = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.userId, userId))
+        .orderBy(desc(projects.createdAt));
       
       const projectsWithDetails = await Promise.all(rows.map(async (project) => {
         const projectFeatures = await db.select().from(features).where(eq(features.projectId, project.id));

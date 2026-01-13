@@ -214,6 +214,7 @@ function ProjectCard({ project, onClick }: { project: any, onClick: () => void }
   const pendingFeaturesList = project?.features?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
   const pendingImprovementsList = project?.improvements?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
   const pendingBugsList = project?.bugs?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
+  const [hoveredType, setHoveredType] = useState<"features" | "improvements" | "bugs" | null>(null);
 
   if (!project) return null;
 
@@ -233,22 +234,37 @@ function ProjectCard({ project, onClick }: { project: any, onClick: () => void }
       
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2 border-t border-border/50 pt-4">
-          <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 transition-colors">
+          <Badge 
+            variant="outline" 
+            onMouseEnter={() => setHoveredType("features")}
+            onMouseLeave={() => setHoveredType(null)}
+            className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10 transition-colors"
+          >
             <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
             {pendingFeaturesList.length} Features
           </Badge>
-          <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-purple-500/5 text-purple-400 border-purple-500/20 hover:bg-purple-500/10 transition-colors">
+          <Badge 
+            variant="outline" 
+            onMouseEnter={() => setHoveredType("improvements")}
+            onMouseLeave={() => setHoveredType(null)}
+            className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-purple-500/5 text-purple-400 border-purple-500/20 hover:bg-purple-500/10 transition-colors"
+          >
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
             {pendingImprovementsList.length} Improvements
           </Badge>
-          <Badge variant="outline" className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-red-500/5 text-red-400 border-red-500/20 hover:bg-red-500/10 transition-colors">
+          <Badge 
+            variant="outline" 
+            onMouseEnter={() => setHoveredType("bugs")}
+            onMouseLeave={() => setHoveredType(null)}
+            className="flex items-center gap-1.5 text-[10px] py-0 h-5 bg-red-500/5 text-red-400 border-red-500/20 hover:bg-red-500/10 transition-colors"
+          >
             <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
             {pendingBugsList.length} Bugs
           </Badge>
         </div>
 
-        <div className="max-h-0 opacity-0 group-hover/card:max-h-64 group-hover/card:opacity-100 transition-all duration-500 ease-in-out overflow-hidden space-y-4">
-          {pendingFeaturesList.length > 0 && (
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${hoveredType ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+          {hoveredType === "features" && pendingFeaturesList.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pending Features</h4>
               <ul className="space-y-1">
@@ -258,7 +274,7 @@ function ProjectCard({ project, onClick }: { project: any, onClick: () => void }
               </ul>
             </div>
           )}
-          {pendingImprovementsList.length > 0 && (
+          {hoveredType === "improvements" && pendingImprovementsList.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pending Improvements</h4>
               <ul className="space-y-1">
@@ -268,7 +284,7 @@ function ProjectCard({ project, onClick }: { project: any, onClick: () => void }
               </ul>
             </div>
           )}
-          {pendingBugsList.length > 0 && (
+          {hoveredType === "bugs" && pendingBugsList.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Active Bugs</h4>
               <ul className="space-y-1">

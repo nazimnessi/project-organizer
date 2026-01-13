@@ -54,30 +54,28 @@ export const improvements = pgTable("improvements", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Activity Table
+export const activities = pgTable("activities", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull(),
+  type: text("type").notNull(), // create, update, delete, status_change
+  entity: text("entity").notNull(), // project, feature, bug, improvement
+  entityId: integer("entity_id"),
+  description: text("description").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const projectsRelations = relations(projects, ({ many }) => ({
   features: many(features),
   bugs: many(bugs),
   improvements: many(improvements),
+  activities: many(activities),
 }));
 
-export const featuresRelations = relations(features, ({ one }) => ({
+export const activitiesRelations = relations(activities, ({ one }) => ({
   project: one(projects, {
-    fields: [features.projectId],
-    references: [projects.id],
-  }),
-}));
-
-export const bugsRelations = relations(bugs, ({ one }) => ({
-  project: one(projects, {
-    fields: [bugs.projectId],
-    references: [projects.id],
-  }),
-}));
-
-export const improvementsRelations = relations(improvements, ({ one }) => ({
-  project: one(projects, {
-    fields: [improvements.projectId],
+    fields: [activities.projectId],
     references: [projects.id],
   }),
 }));
@@ -87,6 +85,7 @@ export const insertProjectSchema = createInsertSchema(projects).omit({ id: true,
 export const insertFeatureSchema = createInsertSchema(features).omit({ id: true, createdAt: true });
 export const insertBugSchema = createInsertSchema(bugs).omit({ id: true, createdAt: true });
 export const insertImprovementSchema = createInsertSchema(improvements).omit({ id: true, createdAt: true });
+export const insertActivitySchema = createInsertSchema(activities).omit({ id: true, createdAt: true });
 
 // Types
 export type Project = typeof projects.$inferSelect;
@@ -100,6 +99,9 @@ export type InsertBug = z.infer<typeof insertBugSchema>;
 
 export type Improvement = typeof improvements.$inferSelect;
 export type InsertImprovement = z.infer<typeof insertImprovementSchema>;
+
+export type Activity = typeof activities.$inferSelect;
+export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
 // API Request Types
 export type CreateProjectRequest = InsertProject;

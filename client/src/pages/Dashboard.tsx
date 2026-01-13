@@ -300,6 +300,8 @@ function ProjectCard({ project, onClick }: { project: any, onClick: () => void }
   );
 }
 
+import { ActivityLog } from "@/components/ActivityLog";
+
 function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
   const { data: project, isLoading } = useProject(id);
   const updateProject = useUpdateProject();
@@ -466,6 +468,10 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
             content={project.authDetails} 
             placeholder="No auth details saved."
           />
+
+          <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+            <ActivityLog projectId={project.id} />
+          </div>
         </div>
       </div>
     </motion.div>

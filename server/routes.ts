@@ -113,6 +113,12 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // Activities API
+  app.get("/api/projects/:projectId/activities", isAuthenticated, async (req, res) => {
+    const activities = await storage.getActivities(Number(req.params.projectId));
+    res.json(activities);
+  });
+
   // Seed Data Endpoint (For development/demo purposes, ideally authenticated or run once)
   app.post("/api/seed", isAuthenticated, async (req, res) => {
     const userId = (req.user as any).claims.sub;

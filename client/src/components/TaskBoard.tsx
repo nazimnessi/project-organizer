@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Plus, Check, X, Pencil, Trash2, CheckCircle2, Circle, ChevronDown, ChevronRight, Search } from "lucide-react";
+import { useState } from "react";
+import { Plus, Check, X, Pencil, Trash2, CheckCircle2, Circle, ChevronDown, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   useCreateFeature, useUpdateFeature, useDeleteFeature,
@@ -16,119 +16,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import type { Feature, Bug, Improvement } from "@shared/schema";
-
-interface TagSelectorProps {
-  selectedTags: string[];
-  onChange: (tags: string[]) => void;
-  allTags: string[];
-}
-
-function TagSelector({ selectedTags, onChange, allTags }: TagSelectorProps) {
-  const [open, setOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-
-  const toggleTag = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      onChange(selectedTags.filter((t) => t !== tag));
-    } else {
-      onChange([...selectedTags, tag]);
-    }
-  };
-
-  const filteredTags = allTags.filter(tag => !selectedTags.includes(tag));
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-0.5">Tags</span>
-      <div className="flex flex-wrap gap-1.5 min-h-[32px] p-1.5 bg-background/50 rounded-md border border-input/50">
-        {selectedTags.map((tag) => (
-          <Badge 
-            key={tag} 
-            variant="secondary" 
-            className="text-[10px] h-5 pl-1.5 pr-1 gap-1 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors"
-          >
-            {tag}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                toggleTag(tag);
-              }}
-              className="hover:text-destructive transition-colors"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          </Badge>
-        ))}
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground border border-dashed border-border/50 hover:border-border"
-            >
-              <Plus className="w-3 h-3 mr-1" /> Add
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0" align="start">
-            <Command>
-              <CommandInput 
-                placeholder="Search or create tag..." 
-                value={inputValue}
-                onValueChange={setInputValue}
-              />
-              <CommandList>
-                <CommandEmpty className="p-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full justify-start text-xs h-8"
-                    onClick={() => {
-                      if (inputValue && !selectedTags.includes(inputValue)) {
-                        toggleTag(inputValue);
-                        setInputValue("");
-                        setOpen(false);
-                      }
-                    }}
-                  >
-                    <Plus className="w-3 h-3 mr-2" />
-                    Create "{inputValue}"
-                  </Button>
-                </CommandEmpty>
-                <CommandGroup heading="Existing Tags">
-                  {filteredTags.map((tag) => (
-                    <CommandItem
-                      key={tag}
-                      onSelect={() => {
-                        toggleTag(tag);
-                        setOpen(false);
-                      }}
-                      className="text-xs"
-                    >
-                      {tag}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
-    </div>
-  );
-}
 
 interface TaskBoardProps {
   projectId: number;
@@ -139,14 +33,6 @@ interface TaskBoardProps {
 
 export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoardProps) {
   const [activeTab, setActiveTab] = useState<"features" | "improvements" | "bugs">("features");
-
-  const allTags = useMemo(() => {
-    const tagsSet = new Set<string>();
-    [...features, ...bugs, ...improvements].forEach(item => {
-      item.tags?.forEach(tag => tagsSet.add(tag));
-    });
-    return Array.from(tagsSet).sort();
-  }, [features, bugs, improvements]);
 
   const pendingFeatures = features.filter(i => i.status === "pending" || i.status === "open").length;
   const pendingImprovements = improvements.filter(i => i.status === "pending" || i.status === "open").length;
@@ -186,7 +72,6 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
             projectId={projectId} 
             items={features} 
             type="feature"
-            allTags={allTags}
           />
         )}
         {activeTab === "improvements" && (
@@ -194,7 +79,6 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
             projectId={projectId} 
             items={improvements} 
             type="improvement"
-            allTags={allTags}
           />
         )}
         {activeTab === "bugs" && (
@@ -202,7 +86,6 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
             projectId={projectId} 
             items={bugs} 
             type="bug"
-            allTags={allTags}
           />
         )}
       </div>
@@ -260,16 +143,14 @@ function TabButton({
 function ItemList({ 
   projectId, 
   items, 
-  type,
-  allTags
+  type 
 }: { 
   projectId: number; 
   items: (Feature | Bug | Improvement)[]; 
-  type: "feature" | "bug" | "improvement";
-  allTags: string[];
+  type: "feature" | "bug" | "improvement"; 
 }) {
   const [newItem, setNewItem] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [newTags, setNewTags] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isCompletedOpen, setIsCompletedOpen] = useState(false);
   
@@ -280,16 +161,18 @@ function ItemList({
   const handleCreate = async () => {
     if (!newItem.trim()) return;
     
+    const tagsArray = newTags.split(",").map(t => t.trim()).filter(t => t !== "");
+    
     try {
       if (type === "feature") {
-        await createFeature.mutateAsync({ projectId, description: newItem, status: "pending", tags: selectedTags });
+        await createFeature.mutateAsync({ projectId, description: newItem, status: "pending", tags: tagsArray });
       } else if (type === "bug") {
-        await createBug.mutateAsync({ projectId, description: newItem, status: "open", tags: selectedTags });
+        await createBug.mutateAsync({ projectId, description: newItem, status: "open", tags: tagsArray });
       } else {
-        await createImprovement.mutateAsync({ projectId, description: newItem, status: "pending", tags: selectedTags });
+        await createImprovement.mutateAsync({ projectId, description: newItem, status: "pending", tags: tagsArray });
       }
       setNewItem("");
-      setSelectedTags([]);
+      setNewTags("");
       setIsAdding(false);
     } catch (e) {
       // Error handled by hook
@@ -320,7 +203,7 @@ function ItemList({
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-3 mb-4 p-4 bg-card/50 rounded-lg border border-border"
+          className="flex flex-col gap-2 mb-4 p-4 bg-card/50 rounded-lg border border-border"
         >
           <Textarea 
             autoFocus
@@ -329,17 +212,17 @@ function ItemList({
             onChange={(e) => setNewItem(e.target.value)}
             className="min-h-[100px]"
           />
-          <TagSelector 
-            selectedTags={selectedTags} 
-            onChange={setSelectedTags} 
-            allTags={allTags}
-          />
-          <div className="flex justify-end gap-2 pt-1 border-t border-border/50">
-            <Button size="sm" variant="ghost" onClick={() => {
-              setIsAdding(false);
-              setNewItem("");
-              setSelectedTags([]);
-            }}>Cancel</Button>
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags (comma separated)</span>
+            <Input 
+              placeholder="e.g. UI, API, high-priority"
+              value={newTags}
+              onChange={(e) => setNewTags(e.target.value)}
+              className="h-8 text-xs bg-background/50"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
             <Button size="sm" onClick={handleCreate}>Save {type}</Button>
           </div>
         </motion.div>
@@ -361,8 +244,7 @@ function ItemList({
                 key={item.id} 
                 item={item} 
                 type={type} 
-                projectId={projectId}
-                allTags={allTags}
+                projectId={projectId} 
               />
             ))
           )}
@@ -390,7 +272,6 @@ function ItemList({
                     item={item} 
                     type={type} 
                     projectId={projectId} 
-                    allTags={allTags}
                   />
                 ))}
               </AnimatePresence>
@@ -405,18 +286,16 @@ function ItemList({
 function TaskItem({ 
   item, 
   type, 
-  projectId,
-  allTags
+  projectId 
 }: { 
   item: Feature | Bug | Improvement; 
   type: "feature" | "bug" | "improvement"; 
-  projectId: number;
-  allTags: string[];
+  projectId: number; 
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.description);
   const [editRank, setEditRank] = useState(String(item.rank || 0));
-  const [editTags, setEditTags] = useState<string[]>(item.tags || []);
+  const [editTags, setEditTags] = useState(item.tags?.join(", ") || "");
 
   const updateFeature = useUpdateFeature();
   const deleteFeature = useDeleteFeature();
@@ -457,14 +336,15 @@ function TaskItem({
 
   const handleUpdateText = () => {
     const rankNum = parseInt(editRank) || 0;
+    const tagsArray = editTags.split(",").map(t => t.trim()).filter(t => t !== "");
     
-    if (editValue.trim() !== item.description || rankNum !== item.rank || JSON.stringify(editTags) !== JSON.stringify(item.tags || [])) {
+    if (editValue.trim() !== item.description || rankNum !== item.rank || JSON.stringify(tagsArray) !== JSON.stringify(item.tags || [])) {
       if (type === "feature") {
-        updateFeature.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
+        updateFeature.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
       } else if (type === "bug") {
-        updateBug.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
+        updateBug.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
       } else {
-        updateImprovement.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
+        updateImprovement.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: tagsArray });
       }
     }
     setIsEditing(false);
@@ -490,14 +370,14 @@ function TaskItem({
 
       <div className="flex-1 min-w-0">
         {isEditing ? (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <div className="flex gap-2 items-center">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Rank</span>
+              <span className="text-xs font-medium text-muted-foreground">Rank:</span>
               <Input 
                 type="number"
                 value={editRank}
                 onChange={(e) => setEditRank(e.target.value)}
-                className="w-20 h-7 text-xs bg-background/50"
+                className="w-20 h-8 text-xs"
               />
             </div>
             <Textarea 
@@ -506,21 +386,25 @@ function TaskItem({
               autoFocus
               className="min-h-[80px] text-sm"
             />
-            <TagSelector 
-              selectedTags={editTags} 
-              onChange={setEditTags} 
-              allTags={allTags}
-            />
-            <div className="flex justify-end gap-2 pt-1 border-t border-border/50">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags</span>
+              <Input 
+                placeholder="e.g. UI, API, high-priority"
+                value={editTags}
+                onChange={(e) => setEditTags(e.target.value)}
+                className="h-8 text-xs bg-background/50"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
               <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
-              <Button size="sm" onClick={handleUpdateText} className="h-8">Save Changes</Button>
+              <Button size="sm" onClick={handleUpdateText} className="h-8">Save</Button>
             </div>
           </div>
         ) : (
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono border-border/50 bg-muted/30">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono">
                   Rank: {item.rank || 0}
                 </Badge>
                 {item.tags?.map((tag, idx) => (

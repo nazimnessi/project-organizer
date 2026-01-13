@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProjects, useProject, useDeleteProject, useCreateProject, useUpdateProject } from "@/hooks/use-projects";
 import { 
   Loader2, LogOut, Plus, Search, Github, Globe, Server, User, 
-  Key, Box, ChevronRight, LayoutGrid, Settings 
+  Key, Box, ChevronRight, LayoutGrid, Settings, AlertCircle 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +62,31 @@ export default function Dashboard() {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!projects || projects.length === 0 && !isLoading) {
+    // If it's an error state from the API (e.g. 500), React Query usually handles it via isError,
+    // but the user wants a specific "something went wrong" page if it's not 200.
+    // The current template uses a simple projects check.
+  }
+
+  const isError = !projects && !isLoading;
+
+  if (isError) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-background p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
+          <AlertCircle className="w-8 h-8 text-red-500" />
+        </div>
+        <h2 className="text-2xl font-display font-bold mb-2">Something went wrong</h2>
+        <p className="text-muted-foreground max-w-md mb-8">
+          We encountered an error while trying to load your projects. Please try refreshing the page or check back later.
+        </p>
+        <Button onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
       </div>
     );
   }

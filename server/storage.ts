@@ -32,16 +32,21 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getProjects(userId: string) {
-    const rows = await db.query.projects.findMany({
-      where: eq(projects.userId, userId),
-      with: {
-        features: true,
-        bugs: true,
-        improvements: true,
-      },
-      orderBy: (projects, { desc }) => [desc(projects.createdAt)],
-    });
-    return rows;
+    try {
+      const rows = await db.query.projects.findMany({
+        where: eq(projects.userId, userId),
+        with: {
+          features: true,
+          bugs: true,
+          improvements: true,
+        },
+        orderBy: (projects, { desc }) => [desc(projects.createdAt)],
+      });
+      return rows;
+    } catch (error) {
+      console.error("Error in getProjects:", error);
+      return [];
+    }
   }
 
   async getProject(id: number, userId: string) {

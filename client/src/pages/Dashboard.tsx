@@ -211,9 +211,11 @@ export default function Dashboard() {
 }
 
 function ProjectCard({ project, onClick }: { project: any, onClick: () => void }) {
-  const pendingFeaturesList = project.features?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
-  const pendingImprovementsList = project.improvements?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
-  const pendingBugsList = project.bugs?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
+  const pendingFeaturesList = project?.features?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
+  const pendingImprovementsList = project?.improvements?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
+  const pendingBugsList = project?.bugs?.filter((i: any) => i.status === "pending" || i.status === "open") || [];
+
+  if (!project) return null;
 
   return (
     <motion.div 

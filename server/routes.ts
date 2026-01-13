@@ -15,9 +15,14 @@ export async function registerRoutes(
 
   // Projects API
   app.get(api.projects.list.path, isAuthenticated, async (req, res) => {
-    const userId = (req.user as any).claims.sub;
-    const projects = await storage.getProjects(userId);
-    res.json(projects);
+    try {
+      const userId = (req.user as any).claims.sub;
+      const projects = await storage.getProjects(userId);
+      res.json(projects);
+    } catch (error) {
+      console.error("Failed to list projects:", error);
+      res.status(500).json({ message: "Failed to load projects" });
+    }
   });
 
   app.get(api.projects.get.path, isAuthenticated, async (req, res) => {

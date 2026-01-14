@@ -341,8 +341,8 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
     );
   }
 
-  const handleUpdate = async (data: any) => {
-    await updateProject.mutateAsync({ id, data });
+  const handleUpdate = async (formData: any) => {
+    await updateProject.mutateAsync({ id, ...formData });
     setIsEditOpen(false);
   };
 
@@ -469,6 +469,26 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
               improvements={project.improvements} 
             />
           </div>
+
+          {project.setupSteps && project.setupSteps.length > 0 && (
+            <div className="bg-card/50 border border-border/50 rounded-xl p-6">
+              <h3 className="text-lg font-display font-semibold mb-6 flex items-center gap-2">
+                <LayoutGrid className="w-4 h-4 text-primary" /> Setup & Running Instructions
+              </h3>
+              <div className="space-y-4">
+                {project.setupSteps.map((step, index) => (
+                  <div key={index} className="flex gap-4 group">
+                    <div className="flex-none w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border border-primary/20">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 pt-1.5 text-sm text-foreground leading-relaxed">
+                      {step}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar: Private Details */}

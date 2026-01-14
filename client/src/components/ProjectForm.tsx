@@ -33,6 +33,7 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
       envDetails: "",
       testUserDetails: "",
       authDetails: "",
+      setupSteps: [],
       ...defaultValues,
     },
   });
@@ -96,6 +97,67 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
               </FormItem>
             )}
           />
+
+          <div className="col-span-1 md:col-span-2 space-y-4 pt-4 border-t border-border">
+            <div className="flex items-center justify-between">
+              <FormLabel className="text-base">Setup & Running Instructions</FormLabel>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  const currentSteps = form.getValues("setupSteps") || [];
+                  form.setValue("setupSteps", [...currentSteps, ""]);
+                }}
+              >
+                <Plus className="w-3 h-3 mr-1" /> Add Step
+              </Button>
+            </div>
+            
+            <div className="space-y-3">
+              {(form.watch("setupSteps") || []).map((_, index) => (
+                <div key={index} className="flex gap-2 group">
+                  <div className="flex-none w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary mt-1.5">
+                    {index + 1}
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name={`setupSteps.${index}`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1 space-y-0">
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder={`Step ${index + 1}: e.g. clone the project...`}
+                            className="bg-background/50 h-9"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-0 group-hover:opacity-100 h-9 w-9 text-muted-foreground hover:text-destructive transition-opacity"
+                    onClick={() => {
+                      const currentSteps = form.getValues("setupSteps") || [];
+                      form.setValue("setupSteps", currentSteps.filter((_, i) => i !== index));
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+              
+              {(!form.watch("setupSteps") || form.watch("setupSteps").length === 0) && (
+                <div className="text-center py-6 border border-dashed border-border rounded-lg text-xs text-muted-foreground">
+                  No setup steps added yet. Add steps like "Clone the repo", "Configure env", etc.
+                </div>
+              )}
+            </div>
+          </div>
 
           <FormField
             control={form.control}

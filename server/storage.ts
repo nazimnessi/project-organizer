@@ -77,6 +77,7 @@ export class DatabaseStorage implements IStorage {
         features: projectFeatures,
         bugs: projectBugs,
         improvements: projectImprovements,
+        setupSteps: project.setupSteps || [],
       };
     } catch (error) {
       console.error("Error in getProject:", error);

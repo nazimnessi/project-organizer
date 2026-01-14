@@ -21,6 +21,7 @@ export const projects = pgTable("projects", {
   envDetails: text("env_details"),
   testUserDetails: text("test_user_details"),
   authDetails: text("auth_details"),
+  setupSteps: text("setup_steps").array(), // New field for step-by-step instructions
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -84,7 +85,9 @@ export const activitiesRelations = relations(activities, ({ one }) => ({
 }));
 
 // Schemas
-export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true, userId: true }); // userId handled by backend
+export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true, userId: true }).extend({
+  setupSteps: z.array(z.string()).optional()
+});
 export const insertFeatureSchema = createInsertSchema(features).omit({ id: true, createdAt: true });
 export const insertBugSchema = createInsertSchema(bugs).omit({ id: true, createdAt: true });
 export const insertImprovementSchema = createInsertSchema(improvements).omit({ id: true, createdAt: true });

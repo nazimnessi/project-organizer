@@ -47,10 +47,18 @@ export async function registerRoutes(
   });
 
   app.put(api.projects.update.path, isAuthenticated, async (req, res) => {
-    const userId = (req.user as any).claims.sub;
-    const input = api.projects.update.input.parse(req.body);
-    const project = await storage.updateProject(Number(req.params.id), userId, input);
-    res.json(project);
+    try {
+      const userId = (req.user as any).claims.sub;
+      const input = api.projects.update.input.parse(req.body);
+      const project = await storage.updateProject(Number(req.params.id), userId, input);
+      res.json(project);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      console.error("Failed to update project:", err);
+      res.status(500).json({ message: "Failed to update project" });
+    }
   });
 
   app.delete(api.projects.delete.path, isAuthenticated, async (req, res) => {

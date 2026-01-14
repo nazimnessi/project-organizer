@@ -475,10 +475,10 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
           {project.setupSteps && project.setupSteps.length > 0 && (
             <div className="bg-card/50 border border-border/50 rounded-xl p-6">
               <h3 className="text-lg font-display font-semibold mb-6 flex items-center gap-2">
-                <LayoutGrid className="w-4 h-4 text-primary" /> Setup & Running Instructions
+                <Box className="w-4 h-4 text-primary" /> Setup & Running Instructions
               </h3>
               <div className="space-y-4">
-                {project.setupSteps.map((step, index) => (
+                {project.setupSteps.map((step: string, index: number) => (
                   <div key={index} className="flex gap-4 group">
                     <div className="flex-none w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border border-primary/20">
                       {index + 1}

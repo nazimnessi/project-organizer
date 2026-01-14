@@ -98,10 +98,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProject(id: number, userId: string, updates: Partial<InsertProject>) {
+    // Filter out undefined or empty objects to avoid Drizzle "No values to set" error
+    const updateData = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== undefined)
+    );
+
+    if (Object.keys(updateData).length === 0) {
+      const [existing] = await db.select().from(projects).where(eq(projects.id, id));
+      return existing;
+    }
+
     const [project] = await db
       .update(projects)
-      .set(updates)
-      .where(eq(projects.id, id)) // In a real app, also check userId
+      .set(updateData)
+      .where(eq(projects.id, id))
       .returning();
     
     await this.createActivity({

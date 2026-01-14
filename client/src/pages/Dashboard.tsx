@@ -342,7 +342,9 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
   }
 
   const handleUpdate = async (formData: any) => {
-    await updateProject.mutateAsync({ id, ...formData });
+    // Ensure we only send the fields that insertProjectSchema expects
+    const { features, bugs, improvements, activities, createdAt, userId, id: _, ...validData } = formData;
+    await updateProject.mutateAsync({ id, ...validData });
     setIsEditOpen(false);
   };
 

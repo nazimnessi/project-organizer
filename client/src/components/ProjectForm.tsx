@@ -151,7 +151,7 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                 </div>
               ))}
               
-              {(!form.watch("setupSteps") || form.watch("setupSteps").length === 0) && (
+              {(!form.watch("setupSteps") || (form.watch("setupSteps")?.length ?? 0) === 0) && (
                 <div className="text-center py-6 border border-dashed border-border rounded-lg text-xs text-muted-foreground">
                   No setup steps added yet. Add steps like "Clone the repo", "Configure env", etc.
                 </div>

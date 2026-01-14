@@ -393,7 +393,10 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
                   <DialogTitle>Edit Project</DialogTitle>
                 </DialogHeader>
                 <ProjectForm 
-                  defaultValues={project} 
+                  defaultValues={{
+                    ...project,
+                    setupSteps: project.setupSteps || []
+                  } as any} 
                   onSubmit={handleUpdate} 
                   isSubmitting={updateProject.isPending} 
                 />

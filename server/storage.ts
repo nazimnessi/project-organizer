@@ -87,7 +87,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProject(userId: string, insertProject: InsertProject) {
-    const [project] = await db.insert(projects).values({ ...insertProject, userId }).returning();
+    const [project] = await db.insert(projects).values({ 
+      ...insertProject, 
+      userId,
+      setupSteps: insertProject.setupSteps || []
+    }).returning();
     await this.createActivity({
       projectId: project.id,
       type: "create",

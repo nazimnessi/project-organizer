@@ -343,12 +343,15 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
 
   const handleUpdate = async (formData: any) => {
     // Ensure we only send the fields that insertProjectSchema expects
-    const { features, bugs, improvements, activities, createdAt, userId, id: _, ...validData } = formData;
+    const { 
+      features, bugs, improvements, activities, createdAt, userId, id: _, 
+      setupSteps, ...validData 
+    } = formData;
     
     // Explicitly handle setupSteps to ensure it's sent correctly
     const finalData = {
       ...validData,
-      setupSteps: formData.setupSteps || []
+      setupSteps: setupSteps || []
     };
     
     await updateProject.mutateAsync({ id, ...finalData });

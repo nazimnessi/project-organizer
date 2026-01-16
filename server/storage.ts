@@ -103,10 +103,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProject(id: number, userId: string, updates: Partial<InsertProject>) {
-    // Filter out undefined or empty objects to avoid Drizzle "No values to set" error
-    const updateData = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
-    );
+    // Explicitly handle setupSteps to ensure it's not filtered out if it's an empty array
+    const updateData: any = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (value !== undefined) {
+        updateData[key] = value;
+      }
+    }
 
     if (Object.keys(updateData).length === 0) {
       const [existing] = await db.select().from(projects).where(eq(projects.id, id));

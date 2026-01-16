@@ -565,6 +565,38 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
                       </div>
                     </div>
                   </div>
+
+                  {/* Environment, Test Accounts, and Auth in Modern Docs */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-card/30 border border-border/50 rounded-xl p-6 space-y-4">
+                      <div className="flex items-center gap-2 text-yellow-500">
+                        <Key className="w-4 h-4" />
+                        <h4 className="font-semibold text-sm uppercase tracking-wider">Environment</h4>
+                      </div>
+                      <div className="prose prose-sm prose-invert max-w-none text-muted-foreground min-h-[100px]">
+                        <ReactMarkdown components={{ p: ({ children }) => <div className="mb-4 last:mb-0">{children}</div> }}>{project.envDetails || "No environment variables documented."}</ReactMarkdown>
+                      </div>
+                    </div>
+                    <div className="bg-card/30 border border-border/50 rounded-xl p-6 space-y-4">
+                      <div className="flex items-center gap-2 text-purple-400">
+                        <User className="w-4 h-4" />
+                        <h4 className="font-semibold text-sm uppercase tracking-wider">Test Accounts</h4>
+                      </div>
+                      <div className="prose prose-sm prose-invert max-w-none text-muted-foreground min-h-[100px]">
+                        <ReactMarkdown components={{ p: ({ children }) => <div className="mb-4 last:mb-0">{children}</div> }}>{project.testUserDetails || "No test accounts documented."}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-card/30 border border-border/50 rounded-xl p-6 space-y-4">
+                    <div className="flex items-center gap-2 text-emerald-400">
+                      <Key className="w-4 h-4" />
+                      <h4 className="font-semibold text-sm uppercase tracking-wider">Authentication</h4>
+                    </div>
+                    <div className="prose prose-sm prose-invert max-w-none text-muted-foreground">
+                      <ReactMarkdown components={{ p: ({ children }) => <div className="mb-4 last:mb-0">{children}</div> }}>{project.authDetails || "No authentication details documented."}</ReactMarkdown>
+                    </div>
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>

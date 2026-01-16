@@ -342,18 +342,19 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
   }
 
   const handleUpdate = async (formData: any) => {
+    console.log("Form data before cleaning:", formData);
     // Ensure we only send the fields that insertProjectSchema expects
     const { 
       features, bugs, improvements, activities, createdAt, userId, id: _, 
-      setupSteps, ...validData 
+      ...validData 
     } = formData;
     
-    // Explicitly handle setupSteps to ensure it's sent correctly
     const finalData = {
       ...validData,
-      setupSteps: setupSteps || []
+      setupSteps: Array.isArray(formData.setupSteps) ? formData.setupSteps : []
     };
     
+    console.log("Sending payload to mutation:", finalData);
     await updateProject.mutateAsync({ id, ...finalData });
     setIsEditOpen(false);
   };

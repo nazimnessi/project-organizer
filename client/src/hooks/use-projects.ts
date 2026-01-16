@@ -72,7 +72,7 @@ export function useUpdateProject() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: UpdateProjectRequest }) => {
+    mutationFn: async ({ id, ...data }: { id: number } & UpdateProjectRequest) => {
       const url = buildUrl(api.projects.update.path, { id });
       const res = await fetch(url, {
         method: api.projects.update.method,

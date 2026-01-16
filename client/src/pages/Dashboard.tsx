@@ -254,9 +254,11 @@ function ProjectCard({ project, onClick }: { project: any, onClick: () => void }
         <h3 className="text-xl font-display font-semibold line-clamp-1">{project.name}</h3>
         <ChevronRight className="w-5 h-5 text-muted-foreground" />
       </div>
-      <p className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1">
-        {project.description || "No description provided."}
-      </p>
+      <div className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1">
+        <div className="prose prose-xs prose-invert max-w-none">
+          <ReactMarkdown>{project.description || "No description provided."}</ReactMarkdown>
+        </div>
+      </div>
       
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2 border-t border-border/50 pt-4">
@@ -450,7 +452,9 @@ function ProjectDetails({ id, onBack }: { id: number, onBack: () => void }) {
           <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-display font-bold tracking-tight">{project.name}</h1>
             <div className="mt-2 text-muted-foreground leading-relaxed">
-              <ReactMarkdown className="prose prose-sm prose-invert max-w-none">{project.description || ""}</ReactMarkdown>
+              <div className="prose prose-sm prose-invert max-w-none">
+                <ReactMarkdown>{project.description || ""}</ReactMarkdown>
+              </div>
             </div>
           </div>
           

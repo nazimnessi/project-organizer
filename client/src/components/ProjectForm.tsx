@@ -1,6 +1,4 @@
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertProjectSchema, type InsertProject } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,17 +12,50 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, X, Globe, Github, Server, LayoutGrid, Key, User, Info, ListOrdered } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  X,
+  Globe,
+  Github,
+  Server,
+  LayoutGrid,
+  Key,
+  User,
+  Info,
+  ListOrdered,
+} from "lucide-react";
+
+export interface Project {
+  id?: number;
+  userId?: number;
+  name: string;
+  description?: string;
+  productionLink?: string;
+  repoLink?: string;
+  frontendLink?: string;
+  backendLink?: string;
+  frontendDetails?: string;
+  backendDetails?: string;
+  envDetails?: string;
+  testUserDetails?: string;
+  authDetails?: string;
+  setupSteps?: string[];
+  createdAt?: string;
+}
 
 interface ProjectFormProps {
-  defaultValues?: Partial<InsertProject>;
-  onSubmit: (data: InsertProject) => void;
+  defaultValues?: Partial<Project>;
+  onSubmit: (data: Project) => void;
   isSubmitting: boolean;
 }
 
-export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFormProps) {
-  const form = useForm<InsertProject>({
-    resolver: zodResolver(insertProjectSchema),
+export function ProjectForm({
+  defaultValues,
+  onSubmit,
+  isSubmitting,
+}: ProjectFormProps) {
+  const form = useForm<Project>({
     defaultValues: {
       name: "",
       description: "",
@@ -48,16 +79,20 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="basic" className="flex items-center gap-2">
-              <Info className="w-4 h-4" /> <span className="hidden sm:inline">Basic</span>
+              <Info className="w-4 h-4" />{" "}
+              <span className="hidden sm:inline">Basic</span>
             </TabsTrigger>
             <TabsTrigger value="technical" className="flex items-center gap-2">
-              <LayoutGrid className="w-4 h-4" /> <span className="hidden sm:inline">Details</span>
+              <LayoutGrid className="w-4 h-4" />{" "}
+              <span className="hidden sm:inline">Details</span>
             </TabsTrigger>
             <TabsTrigger value="setup" className="flex items-center gap-2">
-              <ListOrdered className="w-4 h-4" /> <span className="hidden sm:inline">Setup</span>
+              <ListOrdered className="w-4 h-4" />{" "}
+              <span className="hidden sm:inline">Setup</span>
             </TabsTrigger>
             <TabsTrigger value="private" className="flex items-center gap-2">
-              <Key className="w-4 h-4" /> <span className="hidden sm:inline">Private</span>
+              <Key className="w-4 h-4" />{" "}
+              <span className="hidden sm:inline">Private</span>
             </TabsTrigger>
           </TabsList>
 
@@ -83,7 +118,12 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                 <FormItem>
                   <FormLabel>Description (Markdown)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="What does this project do?" className="h-32" {...field} value={field.value || ""} />
+                    <Textarea
+                      placeholder="What does this project do?"
+                      className="h-32"
+                      {...field}
+                      value={field.value || ""}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -97,10 +137,15 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <Globe className="w-3 h-3 text-emerald-400" /> Production URL
+                      <Globe className="w-3 h-3 text-emerald-400" /> Production
+                      URL
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." {...field} value={field.value || ""} />
+                      <Input
+                        placeholder="https://..."
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -116,7 +161,11 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                       <Github className="w-3 h-3" /> Repository URL
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="https://github.com/..." {...field} value={field.value || ""} />
+                      <Input
+                        placeholder="https://github.com/..."
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -133,10 +182,15 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
-                      <LayoutGrid className="w-3 h-3 text-purple-400" /> Frontend URL
+                      <LayoutGrid className="w-3 h-3 text-purple-400" />{" "}
+                      Frontend URL
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." {...field} value={field.value || ""} />
+                      <Input
+                        placeholder="https://..."
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +206,11 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                       <Server className="w-3 h-3 text-blue-400" /> Backend URL
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." {...field} value={field.value || ""} />
+                      <Input
+                        placeholder="https://..."
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -167,7 +225,12 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                 <FormItem>
                   <FormLabel>Frontend Details (Markdown)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Architecture, components, styling..." className="h-24" {...field} value={field.value || ""} />
+                    <Textarea
+                      placeholder="Architecture, components, styling..."
+                      className="h-24"
+                      {...field}
+                      value={field.value || ""}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -181,7 +244,12 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                 <FormItem>
                   <FormLabel>Backend Details (Markdown)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="API, storage, database, security..." className="h-24" {...field} value={field.value || ""} />
+                    <Textarea
+                      placeholder="API, storage, database, security..."
+                      className="h-24"
+                      {...field}
+                      value={field.value || ""}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -193,13 +261,17 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <FormLabel className="text-base">Running Instructions</FormLabel>
-                  <FormDescription>Step-by-step guide to get the project running.</FormDescription>
+                  <FormLabel className="text-base">
+                    Running Instructions
+                  </FormLabel>
+                  <FormDescription>
+                    Step-by-step guide to get the project running.
+                  </FormDescription>
                 </div>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => {
                     const currentSteps = form.getValues("setupSteps") || [];
                     form.setValue("setupSteps", [...currentSteps, ""]);
@@ -208,7 +280,7 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                   <Plus className="w-3 h-3 mr-1" /> Add Step
                 </Button>
               </div>
-              
+
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                 {(form.watch("setupSteps") || []).map((_, index) => (
                   <div key={index} className="flex gap-2 group items-start">
@@ -221,8 +293,8 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                       render={({ field }) => (
                         <FormItem className="flex-1 space-y-0">
                           <FormControl>
-                            <Input 
-                              {...field} 
+                            <Input
+                              {...field}
                               placeholder={`Step ${index + 1}: e.g. npm install...`}
                               className="bg-background/50 h-10"
                             />
@@ -238,15 +310,19 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                       className="opacity-0 group-hover:opacity-100 h-10 w-10 text-muted-foreground hover:text-destructive transition-opacity"
                       onClick={() => {
                         const currentSteps = form.getValues("setupSteps") || [];
-                        form.setValue("setupSteps", currentSteps.filter((_, i) => i !== index));
+                        form.setValue(
+                          "setupSteps",
+                          currentSteps.filter((_, i) => i !== index),
+                        );
                       }}
                     >
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
                 ))}
-                
-                {(!form.watch("setupSteps") || (form.watch("setupSteps")?.length ?? 0) === 0) && (
+
+                {(!form.watch("setupSteps") ||
+                  (form.watch("setupSteps")?.length ?? 0) === 0) && (
                   <div className="text-center py-12 border border-dashed border-border rounded-lg text-sm text-muted-foreground bg-muted/20">
                     <ListOrdered className="w-8 h-8 mx-auto mb-2 opacity-20" />
                     No setup steps added yet.
@@ -259,7 +335,8 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
           <TabsContent value="private" className="space-y-6">
             <div className="bg-muted/30 p-4 rounded-lg border border-yellow-500/20 mb-4">
               <p className="text-xs text-yellow-500/80 flex items-center gap-2">
-                <Key className="w-3 h-3" /> Information in this tab is only visible to you.
+                <Key className="w-3 h-3" /> Information in this tab is only
+                visible to you.
               </p>
             </div>
 
@@ -272,11 +349,11 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                     <Server className="w-3 h-3" /> Environment Variables
                   </FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="DATABASE_URL=...&#10;API_KEY=..." 
-                      className="font-mono text-xs h-32" 
-                      {...field} 
-                      value={field.value || ""} 
+                    <Textarea
+                      placeholder="DATABASE_URL=...&#10;API_KEY=..."
+                      className="font-mono text-xs h-32"
+                      {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -294,11 +371,11 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                       <User className="w-3 h-3" /> Test Users
                     </FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="user: admin@test.com&#10;pass: 123456" 
-                        className="font-mono text-xs h-24" 
-                        {...field} 
-                        value={field.value || ""} 
+                      <Textarea
+                        placeholder="user: admin@test.com&#10;pass: 123456"
+                        className="font-mono text-xs h-24"
+                        {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -315,11 +392,11 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
                       <Key className="w-3 h-3" /> Auth Configuration
                     </FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Auth0 Client ID: ...&#10;Callback URL: ..." 
-                        className="font-mono text-xs h-24" 
-                        {...field} 
-                        value={field.value || ""} 
+                      <Textarea
+                        placeholder="Auth0 Client ID: ...&#10;Callback URL: ..."
+                        className="font-mono text-xs h-24"
+                        {...field}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -331,7 +408,11 @@ export function ProjectForm({ defaultValues, onSubmit, isSubmitting }: ProjectFo
         </Tabs>
 
         <div className="flex justify-end pt-6 border-t border-border">
-          <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto h-11 px-8 shadow-lg shadow-primary/20">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto h-11 px-8 shadow-lg shadow-primary/20"
+          >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {defaultValues ? "Save Changes" : "Create Project"}
           </Button>

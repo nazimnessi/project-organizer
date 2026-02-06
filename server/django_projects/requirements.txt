@@ -1,0 +1,4 @@
+Django>=6.0.2
+DjangoRestFramework>=3.14
+django-cors-headers>=4.0
+djangorestframework-simplejwt

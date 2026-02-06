@@ -1,143 +1,115 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, buildUrl } from "@shared/routes";
-import type { 
-  CreateProjectRequest, 
-  UpdateProjectRequest, 
-  InsertFeature, 
-  InsertBug, 
-  InsertImprovement 
-} from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
-
-// ==========================================
-// PROJECTS
-// ==========================================
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "./use-toast";
+import axios from "@/AxiosClient";
 
 export function useProjects() {
   return useQuery({
-    queryKey: [api.projects.list.path],
+    queryKey: ["projects"],
     queryFn: async () => {
-      const res = await fetch(api.projects.list.path, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch projects");
-      return api.projects.list.responses[200].parse(await res.json());
+      const res = await axios.get("/api/projects/");
+      return res.data.results;
     },
   });
 }
 
 export function useProject(id: number) {
   return useQuery({
-    queryKey: [api.projects.get.path, id],
+    queryKey: ["projects", id],
     queryFn: async () => {
-      const url = buildUrl(api.projects.get.path, { id });
-      const res = await fetch(url, { credentials: "include" });
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error("Failed to fetch project");
-      return api.projects.get.responses[200].parse(await res.json());
+      const res = await axios.get(`/api/projects/${id}`);
+      return res.data;
     },
-    enabled: !!id,
   });
 }
-
 export function useCreateProject() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (data: CreateProjectRequest) => {
-      const res = await fetch(api.projects.create.path, {
-        method: api.projects.create.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to create project");
-      }
-      return api.projects.create.responses[201].parse(await res.json());
+    mutationKey: ["createProject"],
+    mutationFn: async (data: any) => {
+      const res = await axios.post("/api/projects/", data);
+      return res.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.list.path] });
+    onSuccess: (newProject) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast({ title: "Success", description: "Project created successfully" });
     },
     onError: (error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
 
-export function useUpdateProject() {
+export function useUpdateProject(id: number) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: number } & UpdateProjectRequest) => {
-      const url = buildUrl(api.projects.update.path, { id });
-      const res = await fetch(url, {
-        method: api.projects.update.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
+    mutationKey: ["updateProject", id],
 
-      if (!res.ok) throw new Error("Failed to update project");
-      return api.projects.update.responses[200].parse(await res.json());
+    mutationFn: async (data: any) => {
+      const res = await axios.put(`/api/projects/${id}/`, data);
+      return res.data;
     },
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.list.path] });
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, id] });
-      toast({ title: "Success", description: "Project updated" });
+    onSuccess: (updatedProject) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({ title: "Updated", description: "Project updated successfully" });
     },
     onError: (error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
 
-export function useDeleteProject() {
+export function useDeleteProject(id: number) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (id: number) => {
-      const url = buildUrl(api.projects.delete.path, { id });
-      const res = await fetch(url, { 
-        method: api.projects.delete.method,
-        credentials: "include" 
-      });
-      if (!res.ok) throw new Error("Failed to delete project");
+    mutationKey: ["deleteProject", id],
+    mutationFn: async () => {
+      const res = await axios.delete(`/api/projects/${id}/`);
+      return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.list.path] });
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
       toast({ title: "Deleted", description: "Project removed successfully" });
     },
   });
 }
-
-// ==========================================
-// FEATURES
-// ==========================================
 
 export function useCreateFeature() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ projectId, ...data }: InsertFeature) => {
-      const url = buildUrl(api.features.create.path, { projectId });
-      const res = await fetch(url, {
-        method: api.features.create.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to add feature");
-      return api.features.create.responses[201].parse(await res.json());
+    mutationKey: ["createFeature"],
+    mutationFn: async (data: any) => {
+      const res = await axios.post("/api/features/", data);
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Added", description: "Feature added to backlog" });
+    onSuccess: (newFeature) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({ title: "Created", description: "Feature created successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
@@ -147,20 +119,26 @@ export function useUpdateFeature() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, projectId, ...data }: { id: number; projectId: number } & Partial<InsertFeature>) => {
-      const url = buildUrl(api.features.update.path, { id });
-      const res = await fetch(url, {
-        method: api.features.update.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to update feature");
-      return api.features.update.responses[200].parse(await res.json());
+    mutationKey: ["updateFeature"],
+    mutationFn: async (data: any) => {
+      const isStatusChange = data.isStatusChange || false;
+      const res = await axios.put(
+        `/api/features/${data.id}/${isStatusChange ? "update-status/" : ""}`,
+        data,
+      );
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Updated", description: "Feature updated" });
+    onSuccess: (updatedFeature) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({ title: "Updated", description: "Feature updated successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
@@ -170,44 +148,47 @@ export function useDeleteFeature() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, projectId }: { id: number; projectId: number }) => {
-      const url = buildUrl(api.features.delete.path, { id });
-      const res = await fetch(url, { 
-        method: api.features.delete.method,
-        credentials: "include" 
-      });
-      if (!res.ok) throw new Error("Failed to delete feature");
+    mutationKey: ["deleteFeature"],
+    mutationFn: async (id: number) => {
+      const res = await axios.delete(`/api/features/${id}/`);
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Deleted", description: "Feature removed" });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({ title: "Deleted", description: "Feature removed successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
-
-// ==========================================
-// BUGS
-// ==========================================
 
 export function useCreateBug() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ projectId, ...data }: InsertBug) => {
-      const url = buildUrl(api.bugs.create.path, { projectId });
-      const res = await fetch(url, {
-        method: api.bugs.create.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to report bug");
-      return api.bugs.create.responses[201].parse(await res.json());
+    mutationKey: ["createBug"],
+    mutationFn: async (data: any) => {
+      const res = await axios.post("/api/bugs/", data);
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Reported", description: "Bug report added" });
+    onSuccess: (newBug) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({ title: "Created", description: "Bug created successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
@@ -217,20 +198,26 @@ export function useUpdateBug() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, projectId, ...data }: { id: number; projectId: number } & Partial<InsertBug>) => {
-      const url = buildUrl(api.bugs.update.path, { id });
-      const res = await fetch(url, {
-        method: api.bugs.update.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to update bug");
-      return api.bugs.update.responses[200].parse(await res.json());
+    mutationKey: ["updateBug"],
+    mutationFn: async (data: any) => {
+      const isStatusChange = data.isStatusChange || false;
+      const res = await axios.put(
+        `/api/bugs/${data.id}/${isStatusChange ? "update-status/" : ""}`,
+        data,
+      );
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Updated", description: "Bug status updated" });
+    onSuccess: (updatedBug) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({ title: "Updated", description: "Bug updated successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
@@ -240,44 +227,50 @@ export function useDeleteBug() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, projectId }: { id: number; projectId: number }) => {
-      const url = buildUrl(api.bugs.delete.path, { id });
-      const res = await fetch(url, { 
-        method: api.bugs.delete.method,
-        credentials: "include" 
-      });
-      if (!res.ok) throw new Error("Failed to delete bug");
+    mutationKey: ["deleteBug"],
+    mutationFn: async (id: number) => {
+      const res = await axios.delete(`/api/bugs/${id}/`);
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Deleted", description: "Bug report removed" });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({ title: "Deleted", description: "Bug removed successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
-
-// ==========================================
-// IMPROVEMENTS
-// ==========================================
 
 export function useCreateImprovement() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ projectId, ...data }: InsertImprovement) => {
-      const url = buildUrl(api.improvements.create.path, { projectId });
-      const res = await fetch(url, {
-        method: api.improvements.create.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to add improvement");
-      return api.improvements.create.responses[201].parse(await res.json());
+    mutationKey: ["createImprovement"],
+    mutationFn: async (data: any) => {
+      const res = await axios.post("/api/improvements/", data);
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Added", description: "Improvement suggestion added" });
+    onSuccess: (newImprovement) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({
+        title: "Created",
+        description: "Improvement created successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
@@ -287,20 +280,29 @@ export function useUpdateImprovement() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, projectId, ...data }: { id: number; projectId: number } & Partial<InsertImprovement>) => {
-      const url = buildUrl(api.improvements.update.path, { id });
-      const res = await fetch(url, {
-        method: api.improvements.update.method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to update improvement");
-      return api.improvements.update.responses[200].parse(await res.json());
+    mutationKey: ["updateImprovement"],
+    mutationFn: async (data: any) => {
+      const isStatusChange = data.isStatusChange || false;
+      const res = await axios.put(
+        `/api/improvements/${data.id}/${isStatusChange ? "update-status/" : ""}`,
+        data,
+      );
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Updated", description: "Improvement updated" });
+    onSuccess: (updatedImprovement) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({
+        title: "Updated",
+        description: "Improvement updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 }
@@ -310,17 +312,36 @@ export function useDeleteImprovement() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, projectId }: { id: number; projectId: number }) => {
-      const url = buildUrl(api.improvements.delete.path, { id });
-      const res = await fetch(url, { 
-        method: api.improvements.delete.method,
-        credentials: "include" 
-      });
-      if (!res.ok) throw new Error("Failed to delete improvement");
+    mutationKey: ["deleteImprovement"],
+    mutationFn: async (id: number) => {
+      const res = await axios.delete(`/api/improvements/${id}`);
+      return res.data;
     },
-    onSuccess: (_, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: [api.projects.get.path, projectId] });
-      toast({ title: "Deleted", description: "Improvement removed" });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"], exact: false });
+      queryClient.invalidateQueries({ queryKey: ["activities"], exact: false });
+      toast({
+        title: "Deleted",
+        description: "Improvement removed successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export function useActivities(projectId: number) {
+  return useQuery({
+    queryKey: ["activities", projectId],
+
+    queryFn: async () => {
+      const res = await axios.get(`/api/projects/${projectId}/activities/`);
+      return res.data;
     },
   });
 }

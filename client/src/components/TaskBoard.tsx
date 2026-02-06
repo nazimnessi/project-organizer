@@ -1,11 +1,16 @@
 import { useState, useMemo } from "react";
-import { Plus, Check, X, Pencil, Trash2, CheckCircle2, Circle, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Check,
+  X,
+  Pencil,
+  Trash2,
+  CheckCircle2,
+  Circle,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  useCreateFeature, useUpdateFeature, useDeleteFeature,
-  useCreateBug, useUpdateBug, useDeleteBug,
-  useCreateImprovement, useUpdateImprovement, useDeleteImprovement 
-} from "@/hooks/use-projects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +28,53 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { Feature, Bug, Improvement } from "@shared/schema";
+import {
+  useCreateBug,
+  useCreateFeature,
+  useCreateImprovement,
+  useDeleteBug,
+  useDeleteFeature,
+  useDeleteImprovement,
+  useUpdateBug,
+  useUpdateFeature,
+  useUpdateImprovement,
+} from "@/hooks/use-projects";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@radix-ui/react-popover";
+
+// Type definitions
+export interface Feature {
+  id: number;
+  projectId: number;
+  description: string;
+  status: "pending" | "completed";
+  rank?: number;
+  tags?: string[];
+  createdAt?: string;
+}
+
+export interface Bug {
+  id: number;
+  projectId: number;
+  description: string;
+  status: "open" | "fixed";
+  rank?: number;
+  tags?: string[];
+  createdAt?: string;
+}
+
+export interface Improvement {
+  id: number;
+  projectId: number;
+  description: string;
+  status: "pending" | "completed";
+  rank?: number;
+  tags?: string[];
+  createdAt?: string;
+}
 
 interface TaskBoardProps {
   projectId: number;
@@ -32,17 +83,26 @@ interface TaskBoardProps {
   improvements: Improvement[];
 }
 
-export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoardProps) {
-  const [activeTab, setActiveTab] = useState<"features" | "improvements" | "bugs">("features");
+export function TaskBoard({
+  projectId,
+  features,
+  bugs,
+  improvements,
+}: TaskBoardProps) {
+  const [activeTab, setActiveTab] = useState<
+    "features" | "improvements" | "bugs"
+  >("features");
 
-  const pendingFeatures = features.filter(i => i.status === "pending" || i.status === "open").length;
-  const pendingImprovements = improvements.filter(i => i.status === "pending" || i.status === "open").length;
-  const pendingBugs = bugs.filter(i => i.status === "pending" || i.status === "open").length;
+  const pendingFeatures = features.filter((i) => i.status === "pending").length;
+  const pendingImprovements = improvements.filter(
+    (i) => i.status === "pending",
+  ).length;
+  const pendingBugs = bugs.filter((i) => i.status === "open").length;
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    [...features, ...bugs, ...improvements].forEach(item => {
-      item.tags?.forEach(tag => tags.add(tag));
+    [...features, ...bugs, ...improvements].forEach((item) => {
+      item.tags?.forEach((tag) => tags.add(tag));
     });
     return Array.from(tags).sort();
   }, [features, bugs, improvements]);
@@ -50,26 +110,26 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
   return (
     <div className="space-y-6">
       <div className="flex gap-2 border-b border-border/50 pb-1">
-        <TabButton 
-          active={activeTab === "features"} 
+        <TabButton
+          active={activeTab === "features"}
           onClick={() => setActiveTab("features")}
           count={pendingFeatures}
         >
           Features
         </TabButton>
-        <TabButton 
-          active={activeTab === "improvements"} 
+        <TabButton
+          active={activeTab === "improvements"}
           onClick={() => setActiveTab("improvements")}
           count={pendingImprovements}
           variant="info"
         >
           Improvements
         </TabButton>
-        <TabButton 
-          active={activeTab === "bugs"} 
+        <TabButton
+          active={activeTab === "bugs"}
           onClick={() => setActiveTab("bugs")}
+          count={0}
           count={pendingBugs}
-          variant="danger"
         >
           Bugs
         </TabButton>
@@ -77,25 +137,25 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
 
       <div className="min-h-[400px]">
         {activeTab === "features" && (
-          <ItemList 
-            projectId={projectId} 
-            items={features} 
+          <ItemList
+            projectId={projectId}
+            items={features}
             type="feature"
             availableTags={allTags}
           />
         )}
         {activeTab === "improvements" && (
-          <ItemList 
-            projectId={projectId} 
-            items={improvements} 
+          <ItemList
+            projectId={projectId}
+            items={improvements}
             type="improvement"
             availableTags={allTags}
           />
         )}
         {activeTab === "bugs" && (
-          <ItemList 
-            projectId={projectId} 
-            items={bugs} 
+          <ItemList
+            projectId={projectId}
+            items={bugs}
             type="bug"
             availableTags={allTags}
           />
@@ -105,15 +165,15 @@ export function TaskBoard({ projectId, features, bugs, improvements }: TaskBoard
   );
 }
 
-function TabButton({ 
-  children, 
-  active, 
-  onClick, 
+function TabButton({
+  children,
+  active,
+  onClick,
   count,
-  variant = "default" 
-}: { 
-  children: React.ReactNode; 
-  active: boolean; 
+  variant = "default",
+}: {
+  children: React.ReactNode;
+  active: boolean;
   onClick: () => void;
   count: number;
   variant?: "default" | "danger" | "info";
@@ -121,13 +181,13 @@ function TabButton({
   const activeStyles = {
     default: "text-primary border-primary",
     danger: "text-red-400 border-red-400",
-    info: "text-blue-400 border-blue-400"
+    info: "text-blue-400 border-blue-400",
   };
 
   const badgeStyles = {
     default: "bg-primary/10 text-primary",
     danger: "bg-red-500/10 text-red-400",
-    info: "bg-blue-500/10 text-blue-400"
+    info: "bg-blue-500/10 text-blue-400",
   };
 
   return (
@@ -139,11 +199,13 @@ function TabButton({
       `}
     >
       {children}
-      <span className={`text-xs px-2 py-0.5 rounded-full ${active ? badgeStyles[variant] : "bg-muted text-muted-foreground"}`}>
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full ${active ? badgeStyles[variant] : "bg-muted text-muted-foreground"}`}
+      >
         {count}
       </span>
       {active && (
-        <motion.div 
+        <motion.div
           layoutId="activeTab"
           className={`absolute bottom-0 left-0 right-0 h-0.5 ${active ? activeStyles[variant].split(" ")[1].replace("text", "bg") : ""}`}
         />
@@ -152,36 +214,51 @@ function TabButton({
   );
 }
 
-function ItemList({ 
-  projectId, 
-  items, 
+function ItemList({
+  projectId,
+  items,
   type,
-  availableTags
-}: { 
-  projectId: number; 
-  items: (Feature | Bug | Improvement)[]; 
-  type: "feature" | "bug" | "improvement"; 
+  availableTags,
+}: {
+  projectId: number;
+  items: (Feature | Bug | Improvement)[];
+  type: "feature" | "bug" | "improvement";
   availableTags: string[];
 }) {
   const [newItem, setNewItem] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isCompletedOpen, setIsCompletedOpen] = useState(false);
-  
+
   const createFeature = useCreateFeature();
   const createBug = useCreateBug();
   const createImprovement = useCreateImprovement();
 
   const handleCreate = async () => {
     if (!newItem.trim()) return;
-    
+
     try {
       if (type === "feature") {
-        await createFeature.mutateAsync({ projectId, description: newItem, status: "pending", tags: selectedTags });
+        await createFeature.mutate({
+          projectId,
+          description: newItem,
+          status: "pending",
+          tags: selectedTags,
+        });
       } else if (type === "bug") {
-        await createBug.mutateAsync({ projectId, description: newItem, status: "open", tags: selectedTags });
+        await createBug.mutate({
+          projectId,
+          description: newItem,
+          status: "open",
+          tags: selectedTags,
+        });
       } else {
-        await createImprovement.mutateAsync({ projectId, description: newItem, status: "pending", tags: selectedTags });
+        await createImprovement.mutate({
+          projectId,
+          description: newItem,
+          status: "pending",
+          tags: selectedTags,
+        });
       }
       setNewItem("");
       setSelectedTags([]);
@@ -192,18 +269,20 @@ function ItemList({
   };
 
   const pendingItems = items
-    .filter(item => item.status === "pending" || item.status === "open")
+    .filter((item) => item.status === "pending" || item.status === "open")
     .sort((a, b) => (b.rank || 0) - (a.rank || 0));
   const completedItems = items
-    .filter(item => item.status === "completed" || item.status === "fixed")
+    .filter((item) => item.status === "completed" || item.status === "fixed")
     .sort((a, b) => (b.rank || 0) - (a.rank || 0));
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-display font-semibold capitalize">{type}s Backlog</h3>
-        <Button 
-          size="sm" 
+        <h3 className="text-lg font-display font-semibold capitalize">
+          {type}s Backlog
+        </h3>
+        <Button
+          size="sm"
           onClick={() => setIsAdding(true)}
           className="bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border-none shadow-none"
         >
@@ -212,12 +291,12 @@ function ItemList({
       </div>
 
       {isAdding && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-4 mb-4 p-4 bg-card/50 rounded-lg border border-border"
         >
-          <Textarea 
+          <Textarea
             autoFocus
             placeholder={`Describe the ${type} (Markdown/bullets supported)...`}
             value={newItem}
@@ -225,8 +304,10 @@ function ItemList({
             className="min-h-[100px]"
           />
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags</span>
-            <TagSelect 
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Tags
+            </span>
+            <TagSelect
               selected={selectedTags}
               onChange={setSelectedTags}
               availableTags={availableTags}
@@ -234,8 +315,16 @@ function ItemList({
             />
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
-            <Button size="sm" variant="ghost" onClick={() => setIsAdding(false)}>Cancel</Button>
-            <Button size="sm" onClick={handleCreate}>Save {type}</Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsAdding(false)}
+            >
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleCreate}>
+              Save {type}
+            </Button>
           </div>
         </motion.div>
       )}
@@ -243,8 +332,8 @@ function ItemList({
       <div className="space-y-2">
         <AnimatePresence mode="popLayout">
           {pendingItems.length === 0 && !isAdding ? (
-            <motion.div 
-              initial={{ opacity: 0 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-center py-12 text-muted-foreground bg-muted/5 rounded-xl border border-dashed border-border"
             >
@@ -252,11 +341,11 @@ function ItemList({
             </motion.div>
           ) : (
             pendingItems.map((item) => (
-              <TaskItem 
-                key={item.id} 
-                item={item} 
-                type={type} 
-                projectId={projectId} 
+              <TaskItem
+                key={item.id}
+                item={item}
+                type={type}
+                projectId={projectId}
                 availableTags={availableTags}
               />
             ))
@@ -270,9 +359,17 @@ function ItemList({
             className="pt-4"
           >
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full justify-between px-2 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-between px-2 text-muted-foreground hover:text-foreground"
+              >
                 <span className="flex items-center gap-2">
-                  {isCompletedOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  {isCompletedOpen ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
                   Completed {type}s ({completedItems.length})
                 </span>
               </Button>
@@ -280,11 +377,11 @@ function ItemList({
             <CollapsibleContent className="space-y-2 mt-2">
               <AnimatePresence mode="popLayout">
                 {completedItems.map((item) => (
-                  <TaskItem 
-                    key={item.id} 
-                    item={item} 
-                    type={type} 
-                    projectId={projectId} 
+                  <TaskItem
+                    key={item.id}
+                    item={item}
+                    type={type}
+                    projectId={projectId}
                     availableTags={availableTags}
                   />
                 ))}
@@ -297,15 +394,15 @@ function ItemList({
   );
 }
 
-function TaskItem({ 
-  item, 
-  type, 
+function TaskItem({
+  item,
+  type,
   projectId,
-  availableTags
-}: { 
-  item: Feature | Bug | Improvement; 
-  type: "feature" | "bug" | "improvement"; 
-  projectId: number; 
+  availableTags,
+}: {
+  item: Feature | Bug | Improvement;
+  type: "feature" | "bug" | "improvement";
+  projectId: number;
   availableTags: string[];
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -315,58 +412,97 @@ function TaskItem({
 
   const updateFeature = useUpdateFeature();
   const deleteFeature = useDeleteFeature();
-  
+
   const updateBug = useUpdateBug();
   const deleteBug = useDeleteBug();
-  
+
   const updateImprovement = useUpdateImprovement();
   const deleteImprovement = useDeleteImprovement();
 
   const isCompleted = item.status === "completed" || item.status === "fixed";
 
   const handleToggleStatus = () => {
-    const newStatus = isCompleted 
-      ? (type === "bug" ? "open" : "pending") 
-      : (type === "bug" ? "fixed" : "completed");
+    const newStatus = isCompleted
+      ? type === "bug"
+        ? "open"
+        : "pending"
+      : type === "bug"
+        ? "fixed"
+        : "completed";
 
     if (type === "feature") {
-      updateFeature.mutate({ id: item.id, projectId, status: newStatus });
+      updateFeature.mutate({
+        id: item.id,
+        projectId,
+        status: newStatus,
+        isStatusChange: true,
+      });
     } else if (type === "bug") {
-      updateBug.mutate({ id: item.id, projectId, status: newStatus });
+      updateBug.mutate({
+        id: item.id,
+        projectId,
+        status: newStatus,
+        isStatusChange: true,
+      });
     } else {
-      updateImprovement.mutate({ id: item.id, projectId, status: newStatus });
+      updateImprovement.mutate({
+        id: item.id,
+        projectId,
+        status: newStatus,
+        isStatusChange: true,
+      });
     }
   };
 
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this item?")) {
-      if (type === "feature") {
-        deleteFeature.mutate({ id: item.id, projectId });
-      } else if (type === "bug") {
-        deleteBug.mutate({ id: item.id, projectId });
-      } else {
-        deleteImprovement.mutate({ id: item.id, projectId });
-      }
+    if (type === "feature") {
+      deleteFeature.mutate(item.id);
+    } else if (type === "bug") {
+      deleteBug.mutate(item.id);
+    } else {
+      deleteImprovement.mutate(item.id);
     }
   };
 
   const handleUpdateText = () => {
     const rankNum = parseInt(editRank) || 0;
-    
-    if (editValue.trim() !== item.description || rankNum !== item.rank || JSON.stringify(editTags) !== JSON.stringify(item.tags || [])) {
+
+    if (
+      editValue.trim() !== item.description ||
+      rankNum !== item.rank ||
+      JSON.stringify(editTags) !== JSON.stringify(item.tags || [])
+    ) {
       if (type === "feature") {
-        updateFeature.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
+        updateFeature.mutate({
+          id: item.id,
+          projectId,
+          description: editValue,
+          rank: rankNum,
+          tags: editTags,
+        });
       } else if (type === "bug") {
-        updateBug.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
+        updateBug.mutate({
+          id: item.id,
+          projectId,
+          description: editValue,
+          rank: rankNum,
+          tags: editTags,
+        });
       } else {
-        updateImprovement.mutate({ id: item.id, projectId, description: editValue, rank: rankNum, tags: editTags });
+        updateImprovement.mutate({
+          id: item.id,
+          projectId,
+          description: editValue,
+          rank: rankNum,
+          tags: editTags,
+        });
       }
     }
     setIsEditing(false);
   };
 
   return (
-    <motion.div 
+    <motion.div
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -376,34 +512,42 @@ function TaskItem({
         ${isCompleted ? "bg-muted/5 border-transparent opacity-80" : "bg-card border-border/50 hover:border-border hover:shadow-md"}
       `}
     >
-      <button 
+      <button
         onClick={handleToggleStatus}
         className={`mt-1 flex-shrink-0 transition-colors ${isCompleted ? "text-green-500" : "text-muted-foreground hover:text-primary"}`}
       >
-        {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
+        {isCompleted ? (
+          <CheckCircle2 className="w-5 h-5" />
+        ) : (
+          <Circle className="w-5 h-5" />
+        )}
       </button>
 
       <div className="flex-1 min-w-0">
         {isEditing ? (
           <div className="flex flex-col gap-3">
             <div className="flex gap-2 items-center">
-              <span className="text-xs font-medium text-muted-foreground">Rank:</span>
-              <Input 
+              <span className="text-xs font-medium text-muted-foreground">
+                Rank:
+              </span>
+              <Input
                 type="number"
                 value={editRank}
                 onChange={(e) => setEditRank(e.target.value)}
                 className="w-20 h-8 text-xs"
               />
             </div>
-            <Textarea 
-              value={editValue} 
+            <Textarea
+              value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               autoFocus
               className="min-h-[80px] text-sm"
             />
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tags</span>
-              <TagSelect 
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Tags
+              </span>
+              <TagSelect
                 selected={editTags}
                 onChange={setEditTags}
                 availableTags={availableTags}
@@ -411,34 +555,79 @@ function TaskItem({
               />
             </div>
             <div className="flex justify-end gap-2 pt-1 border-t border-border/50">
-              <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="h-8">Cancel</Button>
-              <Button size="sm" onClick={handleUpdateText} className="h-8">Save</Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsEditing(false)}
+                className="h-8"
+              >
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleUpdateText} className="h-8">
+                Save
+              </Button>
             </div>
           </div>
         ) : (
           <div className="flex justify-between items-start gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1.5 font-mono"
+                >
                   Rank: {item.rank || 0}
                 </Badge>
                 {item.tags?.map((tag, idx) => (
-                  <Badge key={idx} variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/5 text-primary/70 border-primary/20">
+                  <Badge
+                    key={idx}
+                    variant="secondary"
+                    className="text-[10px] h-4 px-1.5 bg-primary/5 text-primary/70 border-primary/20"
+                  >
                     {tag}
                   </Badge>
                 ))}
               </div>
-              <div className={`text-sm whitespace-pre-wrap ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}>
+              <div
+                className={`text-sm whitespace-pre-wrap ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}
+              >
                 {item.description}
               </div>
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-              <button onClick={() => setIsEditing(true)} className="p-1 text-muted-foreground hover:text-primary">
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-1 text-muted-foreground hover:text-primary"
+              >
                 <Pencil className="w-4 h-4" />
               </button>
-              <button onClick={handleDelete} className="p-1 text-muted-foreground hover:text-destructive">
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <Popover>
+                <PopoverTrigger>
+                  <button className="p-1 text-muted-foreground hover:text-destructive">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <div className="bg-background p-4 rounded-md">
+                    <p className="text-sm text-foreground">
+                      Are you sure you want to delete this item?
+                    </p>
+                    <div className="flex justify-end gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {}}
+                        className="h-8"
+                      >
+                        Cancel
+                      </Button>
+                      <Button size="sm" onClick={handleDelete} className="h-8">
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         )}

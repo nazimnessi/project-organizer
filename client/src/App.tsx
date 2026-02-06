@@ -8,21 +8,26 @@ import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
+import Login from "./pages/Login";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+function ProtectedRoute({
+  component: Component,
+}: {
+  component: React.ComponentType;
+}) {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="h-screen w-full flex items-center justify-center bg-background">
+  //       <Loader2 className="w-8 h-8 animate-spin text-primary" />
+  //     </div>
+  //   );
+  // }
 
-  if (!user) {
-    return <Redirect to="/" />;
-  }
+  // if (!user) {
+  //   return <Redirect to="/" />;
+  // }
 
   return <Component />;
 }
@@ -40,9 +45,8 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/">
-        {user ? <Dashboard /> : <Landing />}
-      </Route>
+      <Route path="/">{user ? <Dashboard /> : <Landing />}</Route>
+      <Route path="/login">{<Login />}</Route>
       <Route path="/dashboard">
         <ProtectedRoute component={Dashboard} />
       </Route>

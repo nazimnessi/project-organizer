@@ -82,6 +82,8 @@ DEFAULT_DATABASE_BACKEND = 'django.db.backends.postgresql'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:5173',
+    'https://project-organizer-ui.vercel.app',
+    'https://project-organizer-backend.onrender.com',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:5173',
 ]
@@ -92,6 +94,8 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'https://project-organizer-ui.vercel.app',
+    'https://project-organizer-backend.onrender.com',
 ]
 
 # Django REST Framework

@@ -54,6 +54,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'django_projects.wsgi.application'
 
+print("DATABASE_URL:", os.environ.get('DATABASE_URL'))
+print("default:",  dj_database_url.config(conn_max_age=600, ssl_require=True))
+
 # Database
 DATABASES = {
     'default': dj_database_url.config(conn_max_age=600, ssl_require=True)

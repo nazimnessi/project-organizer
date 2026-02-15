@@ -1,5 +1,5 @@
+import axios from "@/AxiosClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 interface User {
   id: number;

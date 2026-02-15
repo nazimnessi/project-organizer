@@ -2,3 +2,6 @@ Django>=6.0.2
 DjangoRestFramework>=3.14
 django-cors-headers>=4.0
 djangorestframework-simplejwt
+psycopg2-binary>=2.9.11
+dj-database-url>=3.1.0
+

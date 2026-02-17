@@ -1,8 +1,7 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
-from django.db import transaction
 from .models import CustomUser, Project, Feature, Bug, Improvement, Activity
 from .serializers import (
     BugStatusUpdateSerializer, CustomUserSerializer, FeatureStatusUpdateSerializer, ImprovementStatusUpdateSerializer, ImprovementStatusUpdateSerializer, ProjectSerializer, FeatureSerializer,

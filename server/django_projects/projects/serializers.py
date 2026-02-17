@@ -52,8 +52,8 @@ class FeatureSerializer(serializers.ModelSerializer):
         project_instance = instance.project
         Activity.objects.create(
                 project=project_instance,
-                type="Create",
-                entity="Feature",
+                type="create",
+                entity="feature",
                 entity_id=instance.id,
                 description=f"Feature '{instance.description}' created"
             )
@@ -72,8 +72,8 @@ class FeatureSerializer(serializers.ModelSerializer):
             activity_description.append(f"Field '{attr}' changed from '{old_value}' to '{new_value}'")
         Activity.objects.create(
                 project=project_instance,
-                type="Update",
-                entity="Feature",
+                type="update",
+                entity="feature",
                 entity_id=instance.id,
                 description=f"Feature '{instance.description}' updated with {', '.join(activity_description)}"
             )
@@ -90,7 +90,7 @@ class FeatureStatusUpdateSerializer(serializers.ModelSerializer):
         Activity.objects.create(
                 project=instance.project,
                 type="status_change",
-                entity="Feature",
+                entity="feature",
                 entity_id=instance.id,
                 description=f"Feature '{instance.description}' status updated to '{instance.status}'"
             )
@@ -107,7 +107,7 @@ class BugStatusUpdateSerializer(serializers.ModelSerializer):
         Activity.objects.create(
                 project=instance.project,
                 type="status_change",
-                entity="Bug",
+                entity="bug",
                 entity_id=instance.id,
                 description=f"Bug '{instance.description}' status updated to '{instance.status}'"
             )
@@ -124,7 +124,7 @@ class ImprovementStatusUpdateSerializer(serializers.ModelSerializer):
         Activity.objects.create(
                 project=instance.project,
                 type="status_change",
-                entity="Improvement",
+                entity="improvement",
                 entity_id=instance.id,
                 description=f"Improvement '{instance.description}' status updated to '{instance.status}'"
             )
@@ -152,8 +152,8 @@ class BugSerializer(serializers.ModelSerializer):
         instance = super().create(validated_data)
         Activity.objects.create(
                 project=instance.project,
-                type="Create",
-                entity="Bug",
+                type="create",
+                entity="bug",
                 entity_id=instance.id,
                 description=f"Bug '{instance.description}' created"
             )
@@ -171,8 +171,8 @@ class BugSerializer(serializers.ModelSerializer):
             activity_description.append(f"Field '{attr}' changed from '{old_value}' to '{new_value}'")
         Activity.objects.create(
                 project=instance.project,
-                type="Update",
-                entity="Bug",
+                type="update",
+                entity="bug",
                 entity_id=instance.id,
                 description=f"Bug '{instance.description}' updated with {', '.join(activity_description)}"
             )
@@ -200,8 +200,8 @@ class ImprovementSerializer(serializers.ModelSerializer):
         instance = super().create(validated_data)
         Activity.objects.create(
                 project=instance.project,
-                type="Create",
-                entity="Improvement",
+                type="create",
+                entity="improvement",
                 entity_id=instance.id,
                 description=f"Improvement '{instance.description}' created"
             )
@@ -219,8 +219,8 @@ class ImprovementSerializer(serializers.ModelSerializer):
             activity_description.append(f"Field '{attr}' changed from '{old_value}' to '{new_value}'")
         Activity.objects.create(
                 project=instance.project,
-                type="Update",
-                entity="Improvement",
+                type="update",
+                entity="improvement",
                 entity_id=instance.id,
                 description=f"Improvement '{instance.description}' updated with {', '.join(activity_description)}"
             )
@@ -290,8 +290,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         
         Activity.objects.create(
                 project=instance,
-                type="Create",
-                entity="Project",
+                type="create",
+                entity="project",
                 entity_id=instance.id,
                 description=f"Project '{instance.name}' created"
             )
@@ -309,8 +309,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             activity_description.append(f"Field '{attr}' changed from '{old_value}' to '{new_value}'")
         Activity.objects.create(
                 project=instance,
-                type="Update",
-                entity="Project",
+                type="update",
+                entity="project",
                 entity_id=instance.id,
                 description=f"Project '{instance.name}' updated with {', '.join(activity_description)}"
             )

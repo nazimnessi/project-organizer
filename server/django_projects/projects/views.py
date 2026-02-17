@@ -1,11 +1,15 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import Project, Feature, Bug, Improvement, Activity
+
+import requests
+from rest_framework.response import Response
+from rest_framework import permissions
+from rest_framework.views import APIView
+from .models import CustomUser, Project, Feature, Bug, Improvement, Activity
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -17,6 +21,36 @@ def get_user_from_session(request):
     if not claims:
         return None
     return claims.get('sub')
+
+class GoogleAuthView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        access_token = request.data.get("access_token")
+
+        # Fetch user info from Google
+        google_user = requests.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {access_token}"}
+        ).json()
+
+        if "email" not in google_user:
+            return Response({"error": "Invalid token"}, status=400)
+
+        email = google_user["email"]
+        try:
+            user = CustomUser.objects.get(
+                    email=email,
+                )
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+        refresh = RefreshToken.for_user(user)
+
+        return JsonResponse({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        })
 
 
 @require_http_methods(["GET"])

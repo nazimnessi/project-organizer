@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from .views import CustomTokenObtainPairView
+from .views import CustomTokenObtainPairView, GoogleAuthView
 from .viewsets import ProjectViewSet, FeatureViewSet, BugViewSet, ImprovementViewSet, ActivityViewSet, UserViewSet
 from rest_framework_simplejwt.views import  TokenRefreshView
 
@@ -16,5 +16,6 @@ router.register(r'users', UserViewSet, basename='user')
 urlpatterns = [
     path('', include(router.urls)),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path("auth/google/", GoogleAuthView.as_view(), name="google_auth"),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

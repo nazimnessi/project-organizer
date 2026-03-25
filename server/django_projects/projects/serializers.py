@@ -252,7 +252,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     envDetails = serializers.CharField(source='env_details', required=False, allow_blank=True, allow_null=True)
     testUserDetails = serializers.CharField(source='test_user_details', required=False, allow_blank=True, allow_null=True)
     authDetails = serializers.CharField(source='auth_details', required=False, allow_blank=True, allow_null=True)
-    developmentNotes = serializers.CharField(source='development_notes', required=False, allow_blank=True, allow_null=True)
+    development_notes = serializers.CharField( required=False, allow_blank=True, allow_null=True)
     setupSteps = serializers.JSONField(
         source="setup_steps",
         required=False
@@ -262,7 +262,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'id', 'userId', 'name', 'description', 'status', 'developmentNotes', 'productionLink', 'repoLink',
+            'id', 'userId', 'name', 'description', 'status', 'development_notes', 'productionLink', 'repoLink',
             'frontendLink', 'backendLink', 'frontendDetails', 'backendDetails',
             'envDetails', 'testUserDetails', 'authDetails', 'setupSteps', 'createdAt',
             'features', 'bugs', 'improvements'
@@ -305,6 +305,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         for attr, (old_value, new_value) in changed_data.items():
             setattr(instance, attr, new_value)
         instance.save()
+        print(validated_data)
         activity_description = []
         for attr, (old_value, new_value) in changed_data.items():
             activity_description.append(f"Field '{attr}' changed from '{old_value}' to '{new_value}'")

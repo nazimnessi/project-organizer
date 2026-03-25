@@ -12,10 +12,18 @@ class CustomUser(AbstractUser):
 
 class Project(models.Model):
     """Project model."""
+    STATUS_CHOICES = [
+        ('POC', 'POC'),
+        ('In Development', 'In Development'),
+        ('Deployed', 'Deployed'),
+    ]
+
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column='user_id')
     name = models.TextField()
     description = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Deployed')
+    deployment_plan = models.TextField(null=True, blank=True)
     production_link = models.TextField(null=True, blank=True)
     repo_link = models.TextField(null=True, blank=True)
     frontend_link = models.TextField(null=True, blank=True)

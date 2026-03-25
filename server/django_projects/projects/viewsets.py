@@ -23,9 +23,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwner]
 
     def get_queryset(self):
-        return Project.objects.filter(user=self.request.user).prefetch_related(
+        queryset = Project.objects.filter(user=self.request.user).prefetch_related(
             'feature_set', 'bug_set', 'improvement_set'
         )
+        status = self.request.query_params.get('status', None)
+        if status:
+            queryset = queryset.filter(status=status)
+        return queryset
 
     def perform_destroy(self, instance):
         self.check_object_permissions(self.request, instance)

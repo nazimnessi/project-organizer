@@ -252,7 +252,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     envDetails = serializers.CharField(source='env_details', required=False, allow_blank=True, allow_null=True)
     testUserDetails = serializers.CharField(source='test_user_details', required=False, allow_blank=True, allow_null=True)
     authDetails = serializers.CharField(source='auth_details', required=False, allow_blank=True, allow_null=True)
-    deploymentPlan = serializers.CharField(source='deployment_plan', required=False, allow_blank=True, allow_null=True)
+    developmentNotes = serializers.CharField(source='development_notes', required=False, allow_blank=True, allow_null=True)
     setupSteps = serializers.JSONField(
         source="setup_steps",
         required=False
@@ -262,7 +262,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'id', 'userId', 'name', 'description', 'status', 'deploymentPlan', 'productionLink', 'repoLink',
+            'id', 'userId', 'name', 'description', 'status', 'developmentNotes', 'productionLink', 'repoLink',
             'frontendLink', 'backendLink', 'frontendDetails', 'backendDetails',
             'envDetails', 'testUserDetails', 'authDetails', 'setupSteps', 'createdAt',
             'features', 'bugs', 'improvements'

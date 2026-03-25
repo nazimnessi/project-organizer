@@ -23,7 +23,7 @@ class Project(models.Model):
     name = models.TextField()
     description = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Deployed')
-    deployment_plan = models.TextField(null=True, blank=True)
+    development_notes = models.TextField(null=True, blank=True)
     production_link = models.TextField(null=True, blank=True)
     repo_link = models.TextField(null=True, blank=True)
     frontend_link = models.TextField(null=True, blank=True)

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.contrib.postgres.fields import ArrayField
 
 
 class CustomUser(AbstractUser):
@@ -25,7 +26,11 @@ class Project(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Deployed')
     development_notes = models.TextField(null=True, blank=True)
     production_link = models.TextField(null=True, blank=True)
-    repo_link = models.TextField(null=True, blank=True)
+    repo_link = ArrayField(
+        base_field=models.TextField(null=True, blank=True),
+        default=list,
+        blank=True,
+    )
     frontend_link = models.TextField(null=True, blank=True)
     backend_link = models.TextField(null=True, blank=True)
     frontend_details = models.TextField(null=True, blank=True)

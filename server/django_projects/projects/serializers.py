@@ -244,7 +244,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     improvements = serializers.SerializerMethodField()
     userId = serializers.IntegerField(source='user.id', read_only=True)
     productionLink = serializers.CharField(source='production_link', required=False, allow_blank=True, allow_null=True)
-    repoLink = serializers.CharField(source='repo_link', required=False, allow_blank=True, allow_null=True)
+    repoLink = serializers.ListField(source='repo_link', required=False, allow_null=True, allow_empty=True)
     frontendLink = serializers.CharField(source='frontend_link', required=False, allow_blank=True, allow_null=True)
     backendLink = serializers.CharField(source='backend_link', required=False, allow_blank=True, allow_null=True)
     frontendDetails = serializers.CharField(source='frontend_details', required=False, allow_blank=True, allow_null=True)

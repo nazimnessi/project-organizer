@@ -2,8 +2,11 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import CustomTokenObtainPairView, GoogleAuthView
-from .viewsets import ProjectViewSet, FeatureViewSet, BugViewSet, ImprovementViewSet, ActivityViewSet, UserViewSet
-from rest_framework_simplejwt.views import  TokenRefreshView
+from .viewsets import (
+    ProjectViewSet, FeatureViewSet, BugViewSet, ImprovementViewSet, 
+    ActivityViewSet, UserViewSet, RoadmapViewSet, RoadmapPhaseViewSet, RoadmapItemViewSet
+)
+from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'projects', ProjectViewSet, basename='project')
@@ -12,6 +15,9 @@ router.register(r'bugs', BugViewSet, basename='bug')
 router.register(r'improvements', ImprovementViewSet, basename='improvement')
 router.register(r'activities', ActivityViewSet, basename='activity')
 router.register(r'users', UserViewSet, basename='user')
+router.register(r'roadmaps', RoadmapViewSet, basename='roadmap')
+router.register(r'roadmaps/phases', RoadmapPhaseViewSet, basename='roadmap-phase')
+router.register(r'roadmap-items', RoadmapItemViewSet, basename='roadmap-item')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -116,6 +116,9 @@ class Activity(models.Model):
         ('feature', 'Feature'),
         ('bug', 'Bug'),
         ('improvement', 'Improvement'),
+        ('roadmap', 'Roadmap'),
+        ('roadmap_phase', 'Roadmap Phase'),
+        ('roadmap_item', 'Roadmap Item'),
     ]
 
     id = models.AutoField(primary_key=True)
@@ -128,3 +131,77 @@ class Activity(models.Model):
 
     def __str__(self):
         return f"{self.type} - {self.entity} at {self.created_at}"
+
+
+class Roadmap(models.Model):
+    """Roadmap model - contains project phases for planning."""
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('active', 'Active'),
+        ('archived', 'Archived'),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='roadmaps')
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.project.name} - {self.name}"
+
+
+class RoadmapPhase(models.Model):
+    """RoadmapPhase model - phases/milestones within a roadmap."""
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE, related_name='phases')
+    name = models.CharField(max_length=255)
+    order = models.IntegerField()
+    target_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.roadmap.name} - {self.name}"
+
+
+class RoadmapItem(models.Model):
+    """RoadmapItem model - individual items/initiatives within a phase."""
+    STATUS_CHOICES = [
+        ('planned', 'Planned'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('blocked', 'Blocked'),
+    ]
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    roadmap_phase = models.ForeignKey(RoadmapPhase, on_delete=models.CASCADE, related_name='items')
+    title = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, null=True, blank=True)
+    linked_feature = models.ForeignKey(Feature, on_delete=models.SET_NULL, null=True, blank=True, related_name='roadmap_items')
+    linked_bug = models.ForeignKey(Bug, on_delete=models.SET_NULL, null=True, blank=True, related_name='roadmap_items')
+    linked_improvement = models.ForeignKey(Improvement, on_delete=models.SET_NULL, null=True, blank=True, related_name='roadmap_items')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.roadmap_phase.roadmap.name} - {self.title}"

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .utils import get_changed_data
-from .models import CustomUser, Project, Feature, Bug, Improvement, Activity
+from .models import CustomUser, Project, Feature, Bug, Improvement, Activity, Roadmap, RoadmapPhase, RoadmapItem
 import json
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -316,4 +316,122 @@ class ProjectSerializer(serializers.ModelSerializer):
                 entity_id=instance.id,
                 description=f"Project '{instance.name}' updated with {', '.join(activity_description)}"
             )
+        return instance
+
+
+class RoadmapItemSerializer(serializers.ModelSerializer):
+    roadmapPhaseId = serializers.IntegerField(source='roadmap_phase.id', read_only=True)
+    linkedFeatureId = serializers.IntegerField(source='linked_feature.id', allow_null=True, required=False, read_only=False)
+    linkedBugId = serializers.IntegerField(source='linked_bug.id', allow_null=True, required=False, read_only=False)
+    linkedImprovementId = serializers.IntegerField(source='linked_improvement.id', allow_null=True, required=False, read_only=False)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+
+    class Meta:
+        model = RoadmapItem
+        fields = ('id', 'roadmapPhaseId', 'title', 'description', 'status', 'priority', 
+                 'linkedFeatureId', 'linkedBugId', 'linkedImprovementId', 'createdAt', 'updatedAt')
+        read_only_fields = ('id', 'createdAt', 'updatedAt', 'roadmapPhaseId')
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        Activity.objects.create(
+            project=instance.roadmap_phase.roadmap.project,
+            type="create",
+            entity="roadmap_item",
+            entity_id=instance.id,
+            description=f"Item '{instance.title}' created in phase '{instance.roadmap_phase.name}'"
+        )
+        return instance
+
+    def update(self, instance, validated_data):
+        changed_data = get_changed_data(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        activity_description = []
+        for attr, (old_value, new_value) in changed_data.items():
+            activity_description.append(f"Field '{attr}' changed from '{old_value}' to '{new_value}'")
+        Activity.objects.create(
+            project=instance.roadmap_phase.roadmap.project,
+            type="update",
+            entity="roadmap_item",
+            entity_id=instance.id,
+            description=f"Item '{instance.title}' updated: {', '.join(activity_description)}"
+        )
+        return instance
+
+
+class RoadmapPhaseSerializer(serializers.ModelSerializer):
+    roadmapId = serializers.IntegerField(source='roadmap.id', read_only=True)
+    items = RoadmapItemSerializer(many=True, read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+    targetDate = serializers.DateField(source='target_date', required=False, allow_null=True)
+
+    class Meta:
+        model = RoadmapPhase
+        fields = ('id', 'roadmapId', 'name', 'order', 'targetDate', 'status', 'items', 'createdAt', 'updatedAt')
+        read_only_fields = ('id', 'roadmapId', 'items', 'createdAt', 'updatedAt')
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        Activity.objects.create(
+            project=instance.roadmap.project,
+            type="create",
+            entity="roadmap_phase",
+            entity_id=instance.id,
+            description=f"Phase '{instance.name}' created in roadmap '{instance.roadmap.name}'"
+        )
+        return instance
+
+    def update(self, instance, validated_data):
+        changed_data = get_changed_data(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        activity_description = []
+        for attr, (old_value, new_value) in changed_data.items():
+            activity_description.append(f"Field '{attr}' changed from '{old_value}' to '{new_value}'")
+        Activity.objects.create(
+            project=instance.roadmap.project,
+            type="update",
+            entity="roadmap_phase",
+            entity_id=instance.id,
+            description=f"Phase '{instance.name}' updated: {', '.join(activity_description)}"
+        )
+        return instance
+
+
+class RoadmapSerializer(serializers.ModelSerializer):
+    projectId = serializers.IntegerField(source='project.id', read_only=True)
+    phases = RoadmapPhaseSerializer(many=True, read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+
+    class Meta:
+        model = Roadmap
+        fields = ('id', 'projectId', 'name', 'description', 'status', 'phases', 'createdAt', 'updatedAt')
+        read_only_fields = ('id', 'projectId', 'phases', 'createdAt', 'updatedAt')
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        Activity.objects.create(
+            project=instance.project,
+            type="create",
+            entity="roadmap",
+            entity_id=instance.id,
+            description=f"Roadmap '{instance.name}' created"
+        )
+        return instance
+
+    def update(self, instance, validated_data):
+        changed_data = get_changed_data(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        activity_description = []
+        for attr, (old_value, new_value) in changed_data.items():
+            activity_description.append(f"Field '{attr}' changed from '{old_value}' to '{new_value}'")
+        Activity.objects.create(
+            project=instance.project,
+            type="update",
+            entity="roadmap",
+            entity_id=instance.id,
+            description=f"Roadmap '{instance.name}' updated: {', '.join(activity_description)}"
+        )
         return instance

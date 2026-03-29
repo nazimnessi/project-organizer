@@ -359,7 +359,7 @@ class RoadmapItemViewSet(viewsets.ModelViewSet):
             description=f"Item '{item_title}' deleted"
         )
 
-    @action(detail=True, methods=["PUT"], url_path="update-status")
+    @action(detail=True, methods=["patch"], url_path="update-status")
     def update_status(self, request, pk=None):
         item = self.get_object()
         old_status = item.status

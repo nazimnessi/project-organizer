@@ -18,23 +18,35 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(Feature)
 class FeatureAdmin(admin.ModelAdmin):
-    list_display = ('id', 'project', 'description', 'status', 'rank', 'created_at')
+    list_display = ('id', 'project', 'description', 'status', 'rank', 'estimated_work_time', 'priority', 'deadline', 'created_at')
     search_fields = ('description', 'project__name')
-    list_filter = ('status', 'created_at')
+    list_filter = ('status', 'priority', 'deadline', 'created_at')
+    fieldsets = (
+        (None, {'fields': ('project', 'description', 'status', 'rank', 'tags', 'estimated_work_time', 'priority', 'deadline')}),
+        ('Timestamps', {'fields': ('created_at',), 'classes': ('collapse',)}),
+    )
 
 
 @admin.register(Bug)
 class BugAdmin(admin.ModelAdmin):
-    list_display = ('id', 'project', 'description', 'status', 'rank', 'created_at')
+    list_display = ('id', 'project', 'description', 'status', 'rank', 'estimated_work_time', 'priority', 'deadline', 'created_at')
     search_fields = ('description', 'project__name')
-    list_filter = ('status', 'created_at')
+    list_filter = ('status', 'priority', 'deadline', 'created_at')
+    fieldsets = (
+        (None, {'fields': ('project', 'description', 'status', 'rank', 'tags', 'estimated_work_time', 'priority', 'deadline')}),
+        ('Timestamps', {'fields': ('created_at',), 'classes': ('collapse',)}),
+    )
 
 
 @admin.register(Improvement)
 class ImprovementAdmin(admin.ModelAdmin):
-    list_display = ('id', 'project', 'description', 'status', 'rank', 'created_at')
+    list_display = ('id', 'project', 'description', 'status', 'rank', 'estimated_work_time', 'priority', 'deadline', 'created_at')
     search_fields = ('description', 'project__name')
-    list_filter = ('status', 'created_at')
+    list_filter = ('status', 'priority', 'deadline', 'created_at')
+    fieldsets = (
+        (None, {'fields': ('project', 'description', 'status', 'rank', 'tags', 'estimated_work_time', 'priority', 'deadline')}),
+        ('Timestamps', {'fields': ('created_at',), 'classes': ('collapse',)}),
+    )
 
 
 @admin.register(Activity)
@@ -54,22 +66,26 @@ class RoadmapAdmin(admin.ModelAdmin):
 
 @admin.register(RoadmapPhase)
 class RoadmapPhaseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'roadmap', 'name', 'order', 'status', 'target_date', 'created_at')
+    list_display = ('id', 'roadmap', 'name', 'order', 'status', 'target_date', 'estimated_work_time', 'deadline', 'created_at')
     search_fields = ('name', 'roadmap__name', 'roadmap__project__name')
-    list_filter = ('status', 'created_at', 'target_date', 'roadmap__project')
+    list_filter = ('status', 'target_date', 'deadline', 'created_at', 'roadmap__project')
     readonly_fields = ('created_at', 'updated_at')
     ordering = ('roadmap', 'order')
+    fieldsets = (
+        (None, {'fields': ('roadmap', 'name', 'order', 'status', 'target_date', 'estimated_work_time', 'deadline')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
+    )
 
 
 @admin.register(RoadmapItem)
 class RoadmapItemAdmin(admin.ModelAdmin):
-    list_display = ('id', 'roadmap_phase', 'title', 'status', 'priority', 'created_at')
+    list_display = ('id', 'roadmap_phase', 'title', 'status', 'priority', 'estimated_work_time', 'deadline', 'created_at')
     search_fields = ('title', 'description', 'roadmap_phase__name', 'roadmap_phase__roadmap__name')
-    list_filter = ('status', 'priority', 'created_at', 'roadmap_phase__roadmap__project')
+    list_filter = ('status', 'priority', 'deadline', 'created_at', 'roadmap_phase__roadmap__project')
     readonly_fields = ('created_at', 'updated_at')
     fieldsets = (
         ('Basic Info', {
-            'fields': ('roadmap_phase', 'title', 'description', 'status', 'priority')
+            'fields': ('roadmap_phase', 'title', 'description', 'status', 'priority', 'estimated_work_time', 'deadline')
         }),
         ('Links', {
             'fields': ('linked_feature', 'linked_bug', 'linked_improvement'),

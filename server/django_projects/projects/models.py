@@ -55,9 +55,13 @@ class Feature(models.Model):
     id = models.AutoField(primary_key=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, db_column='project_id')
     description = models.TextField()
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     rank = models.IntegerField(default=0)
     tags = models.TextField(default='[]', blank=True)  # JSON string instead of ArrayField
+    estimated_work_time = models.DurationField(null=True, blank=True, help_text="Estimated work time (hh:mm:ss)")
+    priority = models.CharField(max_length=10, choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')], null=True, blank=True)
+    deadline = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -74,9 +78,13 @@ class Bug(models.Model):
     id = models.AutoField(primary_key=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, db_column='project_id')
     description = models.TextField()
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     rank = models.IntegerField(default=0)
     tags = models.TextField(default='[]', blank=True)  # JSON string instead of ArrayField
+    estimated_work_time = models.DurationField(null=True, blank=True, help_text="Estimated work time (hh:mm:ss)")
+    priority = models.CharField(max_length=10, choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')], null=True, blank=True)
+    deadline = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -93,9 +101,13 @@ class Improvement(models.Model):
     id = models.AutoField(primary_key=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, db_column='project_id')
     description = models.TextField()
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     rank = models.IntegerField(default=0)
     tags = models.TextField(default='[]', blank=True)  # JSON string instead of ArrayField
+    estimated_work_time = models.DurationField(null=True, blank=True, help_text="Estimated work time (hh:mm:ss)")
+    priority = models.CharField(max_length=10, choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')], null=True, blank=True)
+    deadline = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -163,9 +175,12 @@ class RoadmapPhase(models.Model):
 
     id = models.AutoField(primary_key=True)
     roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE, related_name='phases')
+
     name = models.CharField(max_length=255)
     order = models.IntegerField()
     target_date = models.DateField(null=True, blank=True)
+    estimated_work_time = models.DurationField(null=True, blank=True, help_text="Estimated work time (hh:mm:ss)")
+    deadline = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -195,8 +210,11 @@ class RoadmapItem(models.Model):
     roadmap_phase = models.ForeignKey(RoadmapPhase, on_delete=models.CASCADE, related_name='items')
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned')
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, null=True, blank=True)
+    estimated_work_time = models.DurationField(null=True, blank=True, help_text="Estimated work time (hh:mm:ss)")
+    deadline = models.DateField(null=True, blank=True)
     linked_feature = models.ForeignKey(Feature, on_delete=models.SET_NULL, null=True, blank=True, related_name='roadmap_items')
     linked_bug = models.ForeignKey(Bug, on_delete=models.SET_NULL, null=True, blank=True, related_name='roadmap_items')
     linked_improvement = models.ForeignKey(Improvement, on_delete=models.SET_NULL, null=True, blank=True, related_name='roadmap_items')

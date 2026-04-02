@@ -34,10 +34,13 @@ class FeatureSerializer(serializers.ModelSerializer):
     projectId = serializers.IntegerField(source='project.id', read_only=True)
     tags = serializers.SerializerMethodField()
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    estimatedWorkTime = serializers.DurationField(source='estimated_work_time', required=False, allow_null=True)
+    priority = serializers.CharField(required=False, allow_null=True)
+    deadline = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Feature
-        fields = ('id', 'projectId', 'description', 'status', 'rank', 'tags', 'createdAt')
+        fields = ('id', 'projectId', 'description', 'status', 'rank', 'tags', 'estimatedWorkTime', 'priority', 'deadline', 'createdAt')
         read_only_fields = ('id', 'createdAt', 'projectId')
 
     def get_tags(self, obj):
@@ -135,10 +138,13 @@ class BugSerializer(serializers.ModelSerializer):
     projectId = serializers.IntegerField(source='project.id', read_only=True)
     tags = serializers.SerializerMethodField()
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    estimatedWorkTime = serializers.DurationField(source='estimated_work_time', required=False, allow_null=True)
+    priority = serializers.CharField(required=False, allow_null=True)
+    deadline = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Bug
-        fields = ('id', 'projectId', 'description', 'status', 'rank', 'tags', 'createdAt')
+        fields = ('id', 'projectId', 'description', 'status', 'rank', 'tags', 'estimatedWorkTime', 'priority', 'deadline', 'createdAt')
         read_only_fields = ('id', 'createdAt', 'projectId')
 
     def get_tags(self, obj):
@@ -183,10 +189,13 @@ class ImprovementSerializer(serializers.ModelSerializer):
     projectId = serializers.IntegerField(source='project.id', read_only=True)
     tags = serializers.SerializerMethodField()
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    estimatedWorkTime = serializers.DurationField(source='estimated_work_time', required=False, allow_null=True)
+    priority = serializers.CharField(required=False, allow_null=True)
+    deadline = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Improvement
-        fields = ('id', 'projectId', 'description', 'status', 'rank', 'tags', 'createdAt')
+        fields = ('id', 'projectId', 'description', 'status', 'rank', 'tags', 'estimatedWorkTime', 'priority', 'deadline', 'createdAt')
         read_only_fields = ('id', 'createdAt', 'projectId')
 
     def get_tags(self, obj):
@@ -326,10 +335,12 @@ class RoadmapItemSerializer(serializers.ModelSerializer):
     linkedImprovementId = serializers.IntegerField(source='linked_improvement.id', allow_null=True, required=False, read_only=False)
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
     updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+    estimatedWorkTime = serializers.DurationField(source='estimated_work_time', required=False, allow_null=True)
+    deadline = serializers.DateField(source='deadline', required=False, allow_null=True)
 
     class Meta:
         model = RoadmapItem
-        fields = ('id', 'roadmapPhaseId', 'title', 'description', 'status', 'priority', 
+        fields = ('id', 'roadmapPhaseId', 'title', 'description', 'status', 'priority', 'estimatedWorkTime', 'deadline',
                  'linkedFeatureId', 'linkedBugId', 'linkedImprovementId', 'createdAt', 'updatedAt')
         read_only_fields = ('id', 'createdAt', 'updatedAt', 'roadmapPhaseId')
 
@@ -366,10 +377,12 @@ class RoadmapPhaseSerializer(serializers.ModelSerializer):
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
     updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
     targetDate = serializers.DateField(source='target_date', required=False, allow_null=True)
+    estimatedWorkTime = serializers.DurationField(source='estimated_work_time', required=False, allow_null=True)
+    deadline = serializers.DateField(source='deadline', required=False, allow_null=True)
 
     class Meta:
         model = RoadmapPhase
-        fields = ('id', 'roadmapId', 'name', 'order', 'targetDate', 'status', 'items', 'createdAt', 'updatedAt')
+        fields = ('id', 'roadmapId', 'name', 'order', 'targetDate', 'estimatedWorkTime', 'deadline', 'status', 'items', 'createdAt', 'updatedAt')
         read_only_fields = ('id', 'roadmapId', 'items', 'createdAt', 'updatedAt')
 
     def create(self, validated_data):

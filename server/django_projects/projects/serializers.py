@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from integrations.serializers import ProjectIntegrationSerializer
 from .utils import get_changed_data
 from .models import CustomUser, Project, Feature, Bug, Improvement, Activity, Roadmap, RoadmapPhase, RoadmapItem
 import json
@@ -251,6 +252,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     features = serializers.SerializerMethodField()
     bugs = serializers.SerializerMethodField()
     improvements = serializers.SerializerMethodField()
+    integrations = ProjectIntegrationSerializer(many=True, read_only=True)
     userId = serializers.IntegerField(source='user.id', read_only=True)
     productionLink = serializers.CharField(source='production_link', required=False, allow_blank=True, allow_null=True)
     repoLink = serializers.ListField(source='repo_link', required=False, allow_null=True, allow_empty=True)
@@ -274,9 +276,12 @@ class ProjectSerializer(serializers.ModelSerializer):
             'id', 'userId', 'name', 'description', 'status', 'development_notes', 'productionLink', 'repoLink',
             'frontendLink', 'backendLink', 'frontendDetails', 'backendDetails',
             'envDetails', 'testUserDetails', 'authDetails', 'setupSteps', 'createdAt',
-            'features', 'bugs', 'improvements'
+            'features', 'bugs', 'improvements', 'integrations'
         )
-        read_only_fields = ('id', 'createdAt', 'userId', 'features', 'bugs', 'improvements')
+        read_only_fields = (
+            'id', 'createdAt', 'userId', 'features', 'bugs', 'improvements',
+            'integrations',
+        )
 
     def get_features(self, obj):
         features = Feature.objects.filter(project=obj)

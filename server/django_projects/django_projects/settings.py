@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'projects',
+    'integrations',
     'django.contrib.postgres'
 ]
 

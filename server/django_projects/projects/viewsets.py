@@ -1,8 +1,10 @@
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from .models import CustomUser, Project, Feature, Bug, Improvement, Activity, Roadmap, RoadmapPhase, RoadmapItem
+from integrations.models import ProjectIntegration
 from .serializers import (
     BugStatusUpdateSerializer, CustomUserSerializer, FeatureStatusUpdateSerializer, ImprovementStatusUpdateSerializer, ImprovementStatusUpdateSerializer, ProjectSerializer, FeatureSerializer,
     BugSerializer, ImprovementSerializer, ActivitySerializer, RoadmapSerializer, RoadmapPhaseSerializer, RoadmapItemSerializer
@@ -29,8 +31,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwner]
 
     def get_queryset(self):
-        queryset = Project.objects.filter(user=self.request.user).prefetch_related(
-            'feature_set', 'bug_set', 'improvement_set', 'integrations__integration'
+        queryset = Project.objects.filter(user=self.request.user).select_related('user').prefetch_related(
+            'feature_set', 'bug_set', 'improvement_set',
+            Prefetch(
+                'integrations',
+                queryset=ProjectIntegration.objects.select_related('project', 'integration'),
+            ),
         ).order_by("-id")
         status = self.request.query_params.get('status', None)
         if status:

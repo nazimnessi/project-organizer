@@ -32,7 +32,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class FeatureSerializer(serializers.ModelSerializer):
-    projectId = serializers.IntegerField(source='project.id', read_only=True)
+    projectId = serializers.IntegerField(source='project_id', read_only=True)
     tags = serializers.SerializerMethodField()
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
     estimatedWorkTime = serializers.DurationField(source='estimated_work_time', required=False, allow_null=True)
@@ -136,7 +136,7 @@ class ImprovementStatusUpdateSerializer(serializers.ModelSerializer):
 
 
 class BugSerializer(serializers.ModelSerializer):
-    projectId = serializers.IntegerField(source='project.id', read_only=True)
+    projectId = serializers.IntegerField(source='project_id', read_only=True)
     tags = serializers.SerializerMethodField()
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
     estimatedWorkTime = serializers.DurationField(source='estimated_work_time', required=False, allow_null=True)
@@ -187,7 +187,7 @@ class BugSerializer(serializers.ModelSerializer):
 
 
 class ImprovementSerializer(serializers.ModelSerializer):
-    projectId = serializers.IntegerField(source='project.id', read_only=True)
+    projectId = serializers.IntegerField(source='project_id', read_only=True)
     tags = serializers.SerializerMethodField()
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
     estimatedWorkTime = serializers.DurationField(source='estimated_work_time', required=False, allow_null=True)
@@ -284,15 +284,15 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
 
     def get_features(self, obj):
-        features = Feature.objects.filter(project=obj)
+        features = obj.feature_set.all()
         return FeatureSerializer(features, many=True).data
 
     def get_bugs(self, obj):
-        bugs = Bug.objects.filter(project=obj)
+        bugs = obj.bug_set.all()
         return BugSerializer(bugs, many=True).data
 
     def get_improvements(self, obj):
-        improvements = Improvement.objects.filter(project=obj)
+        improvements = obj.improvement_set.all()
         return ImprovementSerializer(improvements, many=True).data
 
     def create(self, validated_data):
